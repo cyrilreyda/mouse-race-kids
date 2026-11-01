@@ -102,7 +102,13 @@
   .play{display:flex; gap:16px; align-items:flex-start; justify-content:center;}
   .field{position:relative; width:min(100%, var(--field-w, 420px)); flex:0 1 auto; padding:0 16px; border-radius:var(--radius-l); overflow:hidden;
     background:#7ED6A2 radial-gradient(circle, #6BC992 3.5px, transparent 4px) 0 0/22px 22px; user-select:none; -webkit-user-select:none; touch-action:none; cursor:default;}
-  .road{position:relative; height:clamp(340px, calc(100vh - 210px), 640px); background:#3D4258; border-left:5px solid #F1F0F8; border-right:5px solid #F1F0F8; overflow:hidden;}
+  /* Прогрес заїзду: маленька автівка їде до фінішного прапорця */
+  .progress{position:relative; height:14px; margin:11px 24px 11px 4px; background:rgba(255,255,255,.8); border-radius:999px;}
+  .prog-fill{position:absolute; left:0; top:0; bottom:0; width:calc(var(--p, 0) * 100%); border-radius:999px; background:linear-gradient(90deg, var(--teal), #3DDC84);}
+  .prog-car{position:absolute; top:50%; left:calc(var(--p, 0) * 100%); width:15px; margin-left:-7.5px; transform:translateY(-50%) rotate(90deg);}
+  .prog-car svg{display:block; width:100%; height:auto;}
+  .prog-flag{position:absolute; right:-24px; top:50%; transform:translateY(-50%); font-size:18px; line-height:1;}
+  .road{position:relative; height:clamp(340px, calc(100vh - 246px), 640px); background:#3D4258; border-left:5px solid #F1F0F8; border-right:5px solid #F1F0F8; overflow:hidden;}
   .sep{position:absolute; top:0; bottom:0; width:4px; margin-left:-2px;
     background:repeating-linear-gradient(to bottom, rgba(255,255,255,.65) 0 28px, transparent 28px 60px); background-position:0 var(--off, 0px);}
   .road.slow::after{content:''; position:absolute; inset:0; background:rgba(108,92,231,.2); pointer-events:none;}
@@ -205,6 +211,9 @@
     </div>
     <div class="play">
       <div class="field" id="field">
+        <div class="progress" id="progress" title="Скільки вже проїхали">
+          <div class="prog-fill"></div><div class="prog-car" id="progCar"></div><span class="prog-flag">🏁</span>
+        </div>
         <div class="road" id="road">
           <div class="car" id="car"></div>
           <div class="slow-badge" id="slowBadge" hidden>⚡ Сповільнення</div>
@@ -297,15 +306,16 @@ const BOOST = new URLSearchParams(location.search).has('boost');
 
 // lanes — смуги; lives — життя; time — тривалість, с; fall — за скільки секунд предмет пролітає дорогу
 // (на початку й наприкінці заїзду, тобто гра поступово пришвидшується); every — пауза між рядами предметів, с;
+// gap — щонайменше стільки секунд біля автівки немає жодного предмета між двома рядами, щоб устигнути змінити смугу;
 // bad — частка перешкод; pair — імовірність, що в ряду два предмети
 const LEVELS = BOOST ? {
-  easy:  { name:'Легко',    ico:'🟢', lanes:3, lives:4, time:60,  fall:[2.8, 2.1], every:.9,  bad:.4,  pair:.15 },
-  mid:   { name:'Середньо', ico:'🟡', lanes:4, lives:3, time:90,  fall:[2.2, 1.6], every:.7,  bad:.45, pair:.3 },
-  hard:  { name:'Важко',    ico:'🔴', lanes:5, lives:3, time:120, fall:[1.7, 1.2], every:.55, bad:.5,  pair:.4 },
+  easy:  { name:'Легко',    ico:'🟢', lanes:3, lives:4, time:60,  fall:[2.8, 2.1], every:.9,  gap:.6,  bad:.4,  pair:.15 },
+  mid:   { name:'Середньо', ico:'🟡', lanes:4, lives:3, time:90,  fall:[2.2, 1.6], every:.7,  gap:.45, bad:.45, pair:.3 },
+  hard:  { name:'Важко',    ico:'🔴', lanes:5, lives:3, time:120, fall:[1.7, 1.2], every:.55, gap:.35, bad:.5,  pair:.4 },
 } : {
-  easy:  { name:'Легко',    ico:'🟢', lanes:3, lives:5, time:60,  fall:[4.2, 3.4], every:1.3,  bad:.3,  pair:0 },
-  mid:   { name:'Середньо', ico:'🟡', lanes:3, lives:4, time:90,  fall:[3.2, 2.4], every:1,    bad:.4,  pair:.15 },
-  hard:  { name:'Важко',    ico:'🔴', lanes:4, lives:3, time:120, fall:[2.5, 1.8], every:.8,  bad:.45, pair:.3 },
+  easy:  { name:'Легко',    ico:'🟢', lanes:3, lives:5, time:60,  fall:[4.2, 3.4], every:1.3,  gap:.9,  bad:.3,  pair:0 },
+  mid:   { name:'Середньо', ico:'🟡', lanes:3, lives:4, time:90,  fall:[3.2, 2.4], every:1,    gap:.7,  bad:.4,  pair:.15 },
+  hard:  { name:'Важко',    ico:'🔴', lanes:4, lives:3, time:120, fall:[2.5, 1.8], every:.8,  gap:.55, bad:.45, pair:.3 },
 };
 // Корисні предмети: pts — бали; chance — частка серед корисних (решта — зірки)
 const GOOD = {
@@ -450,6 +460,7 @@ const CAR_SVG = `<svg viewBox="0 0 40 64" aria-hidden="true">
   <path d="M20 3v11" stroke="#fff" stroke-width="3" opacity=".55"/>
 </svg>`;
 $('car').innerHTML = CAR_SVG;
+$('progCar').innerHTML = CAR_SVG;
 
 // Довідка для вчителя під грою: які налаштування діють
 function updateTeacherNote(){
@@ -496,8 +507,8 @@ function measure(){
   if(!G) return;
   H = road.clientHeight;
   const laneW = road.clientWidth / G.L.lanes;
-  SZ = Math.round(Math.min(laneW * .62, 66));
-  CAR_W = Math.round(Math.min(laneW * .5, 54));
+  SZ = Math.round(Math.min(laneW * .5, 52));
+  CAR_W = Math.round(Math.min(laneW * .4, 44));
   CAR_B = Math.round(H * .05) + 6;
   road.style.setProperty('--sz', SZ + 'px');
   road.style.setProperty('--car-w', CAR_W + 'px');
@@ -511,7 +522,7 @@ function start(levelId){
   stopGame();
   lastLevel = levelId;
   const L = LEVELS[levelId];
-  G = { id:levelId, L, lane:Math.floor((L.lanes - 1) / 2), lives:L.lives, score:0, items:[], t:0, dist:0, spawn:.6,
+  G = { id:levelId, L, lane:Math.floor((L.lanes - 1) / 2), lives:L.lives, score:0, items:[], prevBad:[], t:0, dist:0, spawn:.6,
         slow:0, safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0, phase:'count', paused:false, raf:0, last:0, timers:[] };
   field.style.setProperty('--field-w', (L.lanes * 125 + 42) + 'px');
   road.querySelectorAll('.sep, .item, .pop').forEach(n=>n.remove());
@@ -529,6 +540,7 @@ function start(levelId){
   $('score').textContent = '0';
   $('time').textContent = fmtTime(L.time);
   $('timeChip').classList.remove('low');
+  $('progress').style.setProperty('--p', 0);
   showScreen('game');
   measure();
   countdown();
@@ -564,7 +576,8 @@ function loop(now){
 function step(dt){
   const L = G.L;
   G.t += dt;
-  if(G.t >= L.time){ $('time').textContent = fmtTime(0); finish(true); return; }
+  if(G.t >= L.time){ $('time').textContent = fmtTime(0); $('progress').style.setProperty('--p', 1); finish(true); return; }
+  $('progress').style.setProperty('--p', (G.t / L.time).toFixed(4));
   const left = L.time - G.t;
   $('time').textContent = fmtTime(Math.ceil(left));
   $('timeChip').classList.toggle('low', left <= 10);
@@ -577,9 +590,9 @@ function step(dt){
   road.style.setProperty('--off', `${(G.dist * (H + SZ)) % 60}px`);
 
   G.spawn -= adv;
-  if(G.spawn <= 0){ spawnRow(); G.spawn += L.every; }
+  if(G.spawn <= 0){ spawnRow(); G.spawn += rowSpacing(fall); }
 
-  const carTop = H - CAR_B - CAR_W * 1.6, carBottom = H - CAR_B, pad = SZ * .18;
+  const { top:carTop, bottom:carBottom, pad } = carBand();
   for(const it of G.items){
     if(it.done) continue;
     it.p += adv / fall;
@@ -592,18 +605,50 @@ function step(dt){
   G.items = G.items.filter(it=>!it.removed);
 }
 
-// Ряд предметів: один, а на складніших рівнях іноді два. Хоча б одна смуга завжди без перешкоди
+// Де по висоті предмет зачіпає автівку: верх і низ автівки та запас по краях малюнка предмета
+function carBand(){
+  const h = CAR_W * 1.6;
+  return { top:H - CAR_B - h * .92, bottom:H - CAR_B - h * .04, pad:SZ * .18 };
+}
+// Пауза до наступного ряду, с: ряд проїжджає повз автівку, а потім ще щонайменше L.gap секунд
+// біля автівки порожньо — час переїхати на сусідню смугу
+function rowSpacing(fall){
+  const b = carBand();
+  const cross = (b.bottom - b.top + SZ - 2 * b.pad) / ((H + SZ) / fall);
+  return Math.max(G.L.every, cross + G.L.gap);
+}
+
+// Ряд предметів: один, а на складніших рівнях іноді два. Пасток немає: з кожної смуги, вільної від перешкод
+// у попередньому ряду, до вільної смуги нового ряду щонайбільше один крок. Інакше ряд розставляємо заново
 function spawnRow(){
+  let row = null;
+  for(let tries = 0; tries < 20 && !row; tries++){
+    row = makeRow();
+    if(!escapable(row)) row = null;
+  }
+  row = row || [{ lane:Math.floor(Math.random() * G.L.lanes), bad:false }];   // не склалося — лише корисний предмет
+  for(const { lane, bad } of row) addItem(lane, bad ? pick(Object.keys(BAD)) : goodType(), bad);
+  G.prevBad = row.filter(r=>r.bad).map(r=>r.lane);
+}
+function makeRow(){
   const L = G.L;
   const lanes = [...Array(L.lanes).keys()].sort(()=>Math.random() - .5);
   const n = Math.random() < L.pair ? 2 : 1;
   let bads = 0;
-  for(const lane of lanes.slice(0, n)){
+  return lanes.slice(0, n).map(lane=>{
     let bad = Math.random() < L.bad;
     if(bad && bads + 1 >= L.lanes) bad = false;
     if(bad) bads++;
-    addItem(lane, bad ? pick(Object.keys(BAD)) : goodType(), bad);
+    return { lane, bad };
+  });
+}
+function escapable(row){
+  const bad = row.filter(r=>r.bad).map(r=>r.lane);
+  const free = l=>l >= 0 && l < G.L.lanes && !bad.includes(l);
+  for(let a = 0; a < G.L.lanes; a++){
+    if(!G.prevBad.includes(a) && !free(a - 1) && !free(a) && !free(a + 1)) return false;
   }
+  return true;
 }
 function goodType(){
   const r = Math.random();

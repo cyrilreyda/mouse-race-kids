@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Як грати · Мишачі перегони</title>
+<link href="../fonts/fonts.css" rel="stylesheet">   <!-- локальні шрифти: гра працює без інтернету -->
+<link rel="icon" type="image/png" href="../icons/icon-192.png">
+<style>
+  :root{
+    --bg:#F6F5FB; --ink:#1B1B3A; --ink-soft:#514F72; --surface:#FFFFFF; --line:#E4E1F5;
+    --purple:#6C5CE7; --teal:#16A3A0; --teal-dark:#0E7C7A; --coral:#FF6B4A; --yellow:#FFC93C;
+    --radius-s:10px; --radius-m:16px; --radius-l:26px;
+    --left:#16A3A0; --right:#FF6B4A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'Nunito Sans',sans-serif; font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Baloo 2',sans-serif; font-weight:700; margin:0; color:var(--ink); line-height:1.25;}
+  .container{max-width:860px; margin:0 auto; padding:0 16px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{position:sticky; top:0; z-index:10; background:rgba(246,245,251,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:860px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; gap:12px;}
+  .back-link{font-family:'Baloo 2',sans-serif; font-weight:600; font-size:14px; color:var(--teal-dark); text-decoration:none; white-space:nowrap;}
+  .back-link:hover{text-decoration:underline;}
+  .play-link{margin-left:auto; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; text-decoration:none; background:var(--teal); color:#fff; border-radius:999px; padding:4px 16px; white-space:nowrap;}
+  .play-link:hover{background:var(--teal-dark);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:28px 0 6px;}
+  .eyebrow{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--teal-dark);}
+  .hero h1{font-size:32px; margin:2px 0 4px;}
+  .hero p{margin:0; color:var(--ink-soft); font-size:17px;}
+  @media (max-width:600px){ .hero h1{font-size:26px;} }
+
+  /* ---------- Кроки ---------- */
+  .steps{list-style:none; margin:20px 0 0; padding:0; display:grid; gap:14px;}
+  .step{display:grid; grid-template-columns:44px 1fr; gap:16px; align-items:center; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-l); padding:18px 20px;}
+  .step.key{border:2px solid var(--teal); box-shadow:0 5px 0 #D2F0EF;}
+  .num{width:44px; height:44px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:22px; align-self:start;}
+  .step h2{font-size:20px; margin-bottom:2px;}
+  .step p{margin:0; color:var(--ink-soft); font-size:15px;}
+  .step p + p{margin-top:4px;}
+  .l{color:var(--left); font-weight:800;} .r{color:var(--right); font-weight:800;}
+  .items{display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:6px;}
+  .items span{display:flex; align-items:center; gap:6px; font-size:14.5px; font-weight:700;}
+  .items svg{width:30px; height:30px;}
+  @media (max-width:720px){ .step{grid-template-columns:36px 1fr; gap:10px 12px; padding:14px;} .num{width:36px; height:36px; font-size:18px;} }
+
+  .kbd{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:14px; background:var(--surface); border:1.5px solid var(--line); border-bottom-width:3px; border-radius:7px; padding:0 7px;}
+  code{font-size:14px; background:#EEEDF6; border-radius:6px; padding:1px 6px;}
+
+  /* ---------- Для вчителя ---------- */
+  .teacher{margin-top:28px;}
+  .teacher h2{font-size:24px; margin-bottom:8px;}
+  .card{background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-l); padding:18px 20px; margin-top:12px;}
+  .card h3{font-size:18px; margin-bottom:6px;}
+  .card p{margin:6px 0 0; font-size:15px;}
+  .card ul{margin:6px 0 0; padding-left:20px; font-size:15px;}
+  table{border-collapse:collapse; font-size:14.5px; width:100%; margin-top:6px;}
+  th, td{padding:6px 10px; border-bottom:1px solid var(--line); text-align:left;}
+  th{font-family:'Baloo 2',sans-serif; font-weight:600; color:var(--ink-soft);}
+  .table-scroll{overflow-x:auto;}
+
+  footer{margin:36px 0 30px; text-align:center; font-size:13.5px; color:var(--ink-soft);}
+  @media print{ body{background:#fff;} .topbar{display:none;} .step, .card{break-inside:avoid;} }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-inner">
+  <a class="back-link" href="../index.html">← До перегонів</a>
+  <a class="play-link" href="../index.html">🏁 Грати</a>
+</div></div>
+
+<main class="container">
+
+  <header class="hero">
+    <div class="eyebrow">Мишачі перегони · Інструкція</div>
+    <h1>Як грати</h1>
+    <p>Тренажер кнопок миші для початкової школи: автівка їде дорогою, а ти кермуєш мишкою.</p>
+  </header>
+
+  <ol class="steps">
+    <li class="step">
+      <span class="num">1</span>
+      <div>
+        <h2>Обери рівень</h2>
+        <p>Клацни картку «Легко», «Середньо» або «Важко». Світлофор порахує до старту.</p>
+      </div>
+    </li>
+    <li class="step key">
+      <span class="num">2</span>
+      <div>
+        <h2>Кермуй кнопками миші</h2>
+        <p><span class="l">Ліва кнопка</span> — автівка переїжджає на смугу вліво. <span class="r">Права кнопка</span> — вправо.</p>
+        <p>Клацати можна будь-де на сторінці. Мишка праворуч від дороги підсвічує кнопку, яку ти натиснув.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">3</span>
+      <div>
+        <h2>Збирай корисне</h2>
+        <div class="items">
+          <span><svg viewBox="0 0 48 48"><path d="M24 3.5l6.1 12.6 13.9 1.9-10.1 9.7 2.5 13.8L24 34.9l-12.4 6.6 2.5-13.8L4 18l13.9-1.9z" fill="#FFC93C" stroke="#E0A800" stroke-width="2.5" stroke-linejoin="round"/></svg>зірка +1</span>
+          <span><svg viewBox="0 0 48 48"><path d="M13 7h22l10 12-21 24L3 19z" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2.5" stroke-linejoin="round"/></svg>кристал +3</span>
+          <span><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20.5" fill="#EDE9FF" stroke="#6C5CE7" stroke-width="2.5"/><path d="M27.5 7L13 27h10l-3 14.5L35 21H25z" fill="#6C5CE7"/></svg>блискавка +2, на 4 с усе повільніше</span>
+          <span><svg viewBox="0 0 48 48"><path d="M24 42S5 30.5 5 17.5A9.6 9.6 0 0 1 24 14a9.6 9.6 0 0 1 19 3.5C43 30.5 24 42 24 42z" fill="#FF5D9E" stroke="#D63A7C" stroke-width="2.5"/></svg>серце +1 життя</span>
+        </div>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">4</span>
+      <div>
+        <h2>Об'їжджай перешкоди</h2>
+        <p>Конус, бар'єр, камінь і калюжа мастила забирають одне життя. Після зіткнення автівка секунду блимає й не ламається вдруге.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">5</span>
+      <div>
+        <h2>Доїдь до фінішу</h2>
+        <p>Заїзд закінчується, коли спливе час або скінчаться життя. Зірки за заїзд: перша — за фініш, друга — якщо зібрав щонайменше 70% корисного, третя — якщо зіткнувся не більше одного разу.</p>
+        <p>Пауза — <span class="kbd">Пробіл</span> або кнопка ⏸. Якщо перейти в інше вікно, гра стає на паузу сама.</p>
+      </div>
+    </li>
+  </ol>
+
+  <section class="teacher" id="teacher">
+    <h2>Для вчителя</h2>
+
+    <div class="card">
+      <h3>Рівні</h3>
+      <div class="table-scroll"><table>
+        <tr><th></th><th>Смуги</th><th>Життя</th><th>Час</th><th>Перешкоди</th></tr>
+        <tr><td>🟢 Легко</td><td>3</td><td>5</td><td>1 хв</td><td>30%, по одному предмету</td></tr>
+        <tr><td>🟡 Середньо</td><td>3</td><td>4</td><td>1,5 хв</td><td>40%, іноді два предмети в ряд</td></tr>
+        <tr><td>🔴 Важко</td><td>4</td><td>3</td><td>2 хв</td><td>45%, частіше два предмети</td></tr>
+      </table></div>
+      <p>Протягом заїзду дорога поступово пришвидшується. У кожному ряду хоча б одна смуга вільна від перешкод. Рекорд кожного рівня зберігається в браузері учня.</p>
+      <p>На екрані результату видно, скільки разів учень клацнув лівою й правою кнопкою: якщо одне з чисел близьке до нуля, учень, імовірно, ще плутає кнопки.</p>
+    </div>
+
+    <div class="card">
+      <h3>Рівні для 5–7 класів: <code>?boost</code></h3>
+      <p>Додайте <code>?boost</code> у кінці адреси. Усі три рівні стають швидшими, перешкод більше, життів менше, а на «Важко» дорога має 5 смуг. Рекорди в цьому режимі зберігаються окремо. Під дорогою дрібним шрифтом видно «Налаштування вчителя: рівні для 5–7 класів».</p>
+    </div>
+
+    <div class="card">
+      <h3>Звук</h3>
+      <p>За замовчуванням гра зі звуком. Кнопки для учнів немає, вчитель перемикає звук так:</p>
+      <ul>
+        <li><code>?zvuk=tykho</code> у кінці адреси — без звуку, <code>?zvuk=klas</code> — зі звуком; параметр одразу зникає з адреси;</li>
+        <li>або <span class="kbd">Ctrl</span> + <span class="kbd">Alt</span> + <span class="kbd">Z</span> у грі (повторне натискання вмикає назад).</li>
+      </ul>
+      <p>Режим запам'ятовується на цьому комп'ютері. Параметри поєднуються: <code>?boost&amp;zvuk=tykho</code>.</p>
+    </div>
+
+    <div class="card">
+      <h3>Без інтернету</h3>
+      <p>Достатньо один раз відкрити гру з інтернетом у Chrome: далі вона відкривається за тією самою адресою й без мережі. Для комп'ютерів, які не бувають онлайн, можна завантажити архів репозиторію, розпакувати й відкрити <code>index.html</code>.</p>
+    </div>
+  </section>
+
+  <footer>Мишачі перегони · Інструкція · у стилі <a href="https://cikavo.me/labs/typing-race/">«Клавіатурних перегонів»</a> з Лабораторії</footer>
+</main>
+
+<script>
+// Офлайн: обробник sw.js зберігає гру в браузері, щоб вона відкривалась без інтернету.
+// Працює лише на сайті (http/https); з папки (file://) гра й так відкривається без мережі
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('../sw.js').catch(()=>{});
+</script>
+</body>
+</html>

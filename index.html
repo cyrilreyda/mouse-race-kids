@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мишачі перегони · Лабораторія</title>
+<link href="fonts/fonts.css" rel="stylesheet">   <!-- локальні шрифти: гра працює без інтернету -->
+<link rel="manifest" href="manifest.webmanifest">   <!-- гру можна встановити як програму -->
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#16A3A0">
+<style>
+  :root{
+    --bg:#F6F5FB; --ink:#1B1B3A; --ink-soft:#514F72; --surface:#FFFFFF; --line:#E4E1F5;
+    --purple:#6C5CE7; --purple-dark:#5340c9; --teal:#16A3A0; --teal-dark:#0E7C7A; --coral:#FF6B4A;
+    --yellow:#FFC93C; --pink:#FF5D9E; --blue:#2D9CDB;
+    --radius-s:10px; --radius-m:16px; --radius-l:26px;
+    --left:#16A3A0; --right:#FF6B4A;   /* кольори лівої й правої кнопки миші всюди в грі */
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'Nunito Sans',sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Baloo 2',sans-serif; font-weight:700; margin:0; color:var(--ink);}
+  button{font:inherit;}
+  [hidden]{display:none !important;}
+  .container{max-width:980px; margin:0 auto; padding:0 16px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{position:sticky; top:0; z-index:10; background:rgba(246,245,251,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:980px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; gap:12px;}
+  .back-link{font-family:'Baloo 2',sans-serif; font-weight:600; font-size:14px; color:var(--teal-dark); text-decoration:none; white-space:nowrap;}
+  .back-link:hover{text-decoration:underline;}
+  .game-title{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .top-btn{margin-left:auto; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; border:1.5px solid var(--teal); background:var(--surface); color:var(--teal-dark); border-radius:999px; padding:4px 14px; cursor:pointer; white-space:nowrap; text-decoration:none;}
+  .top-btn:hover{background:#E3F7F6;}
+  @media (max-width:640px){ .game-title{display:none;} .top-btn .long{display:none;} .top-btn{padding:4px 11px;} }
+
+  main{padding:16px 0 40px;}
+
+  /* ---------- Кнопки й панелі ---------- */
+  .panel{background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-l); padding:20px; margin-top:16px;}
+  .btn{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px; border:none; border-radius:999px; padding:10px 20px; cursor:pointer;}
+  .btn-primary{background:var(--teal); color:#fff;}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-big{font-size:19px; padding:12px 30px; box-shadow:0 4px 0 var(--teal-dark);}
+  .btn-big:active{transform:translateY(2px); box-shadow:0 2px 0 var(--teal-dark);}
+  .btn-ghost{background:var(--bg); color:var(--ink); border:1.5px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--teal);}
+  .toast{position:fixed; left:50%; bottom:24px; z-index:40; transform:translate(-50%, 20px); opacity:0; pointer-events:none;
+    background:var(--ink); color:#fff; font-family:'Baloo 2',sans-serif; font-weight:600; font-size:15px; padding:8px 18px; border-radius:999px;
+    box-shadow:0 8px 20px rgba(27,27,58,.25); transition:opacity .2s ease, transform .2s ease;}
+  .toast.show{opacity:1; transform:translate(-50%, 0);}
+  .confetti{position:fixed; top:-20px; width:10px; height:16px; border-radius:3px; z-index:30; pointer-events:none; animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+  /* Довідка для вчителя: які налаштування з адреси діють */
+  .teacher-note{margin-top:10px; text-align:center; font-size:12.5px; color:var(--ink-soft); opacity:.8;}
+  .teacher-note:empty{display:none;}
+
+  /* ---------- Вибір рівня ---------- */
+  .intro{display:flex; align-items:center; gap:20px;}
+  .intro .mouse{width:92px; flex-shrink:0;}
+  .intro h1{font-size:28px; line-height:1.15;}
+  .intro p{margin:4px 0 0; font-size:17px;}
+  .intro .l{color:var(--left); font-weight:800;} .intro .r{color:var(--right); font-weight:800;}
+  @media (max-width:520px){ .intro{flex-direction:column; text-align:center; gap:8px;} .intro .mouse{width:70px;} }
+  .legend{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:18px 0 6px;}
+  @media (max-width:640px){ .legend{grid-template-columns:1fr;} }
+  .legend-box{border-radius:var(--radius-m); padding:10px 14px;}
+  .legend-box.good{background:#E3F7F6;}
+  .legend-box.bad{background:#FFEDE8;}
+  .legend-box h3{font-size:15px; color:var(--ink-soft); margin-bottom:4px;}
+  .legend-row{display:flex; flex-wrap:wrap; gap:4px 16px;}
+  .legend-item{display:flex; align-items:center; gap:6px; font-size:14px; font-weight:700;}
+  .legend-item svg{width:30px; height:30px; flex-shrink:0;}
+  .legend-item small{font-weight:600; color:var(--ink-soft); font-size:13px;}
+  .levels-title{font-size:17px; margin:18px 0 10px;}
+  .levels{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;}
+  @media (max-width:640px){ .levels{grid-template-columns:1fr;} }
+  .level{display:flex; flex-direction:column; align-items:center; gap:2px; border:1.5px solid var(--line); background:var(--surface); border-radius:var(--radius-m); padding:14px 10px 12px; cursor:pointer; text-align:center; transition:all .15s ease;}
+  .level:hover{border-color:var(--teal); transform:translateY(-2px); box-shadow:0 6px 16px rgba(27,27,58,.08);}
+  .level .lv-ico{font-size:30px; line-height:1;}
+  .level .lv-name{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:21px; line-height:1.2;}
+  .level .lv-info{font-size:13px; font-weight:600; color:var(--ink-soft);}
+  .level .lv-best{margin-top:6px; font-size:13px; font-weight:700; color:var(--ink-soft); background:var(--bg); border-radius:999px; padding:1px 12px;}
+  .level .lv-best.got{background:#FFF4D6; color:#8A6200;}
+
+  /* ---------- Гра ---------- */
+  .hud{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; margin:0 auto 10px;}
+  .chip{display:inline-flex; align-items:center; gap:6px; background:var(--surface); border:1.5px solid var(--line); border-radius:999px; padding:3px 14px; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:19px; line-height:1.4; white-space:nowrap;}
+  .chip svg{width:24px; height:24px;}
+  .hearts{gap:2px; padding:3px 10px;}
+  .hearts svg{width:22px; height:22px; transition:opacity .3s ease, transform .3s ease;}
+  .hearts svg.lost{opacity:.2; filter:grayscale(1); transform:scale(.8);}
+  .hearts svg.gain{animation:beat .5s ease;}
+  @keyframes beat{50%{transform:scale(1.4);}}
+  .chip.score span{display:inline-block; min-width:1.4em; transition:transform .2s ease;}
+  .chip.score span.pop{transform:scale(1.35);}
+  .chip.time.low{color:#C2410C; border-color:#FFC4B5;}
+  .round-btn{width:38px; height:38px; border-radius:50%; border:1.5px solid var(--line); background:var(--surface); color:var(--ink-soft); font-size:16px; font-weight:800; line-height:1; cursor:pointer; padding:0;}
+  .round-btn:hover{border-color:var(--teal); color:var(--teal-dark);}
+  .round-btn.exit:hover{border-color:var(--coral); color:var(--coral);}
+
+  .play{display:flex; gap:16px; align-items:flex-start; justify-content:center;}
+  .field{position:relative; width:min(100%, var(--field-w, 420px)); flex:0 1 auto; padding:0 16px; border-radius:var(--radius-l); overflow:hidden;
+    background:#7ED6A2 radial-gradient(circle, #6BC992 3.5px, transparent 4px) 0 0/22px 22px; user-select:none; -webkit-user-select:none; touch-action:none; cursor:default;}
+  .road{position:relative; height:clamp(340px, calc(100vh - 210px), 640px); background:#3D4258; border-left:5px solid #F1F0F8; border-right:5px solid #F1F0F8; overflow:hidden;}
+  .sep{position:absolute; top:0; bottom:0; width:4px; margin-left:-2px;
+    background:repeating-linear-gradient(to bottom, rgba(255,255,255,.65) 0 28px, transparent 28px 60px); background-position:0 var(--off, 0px);}
+  .road.slow::after{content:''; position:absolute; inset:0; background:rgba(108,92,231,.2); pointer-events:none;}
+  .slow-badge{position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:3; white-space:nowrap; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:14px;
+    background:var(--purple); color:#fff; border-radius:999px; padding:2px 14px;}
+  .item{position:absolute; top:0; width:var(--sz); height:var(--sz); margin-left:calc(var(--sz) / -2); will-change:transform; z-index:1;}
+  .item svg{display:block; width:100%; height:100%; overflow:visible;}
+  .item.gone{transition:opacity .25s ease, scale .25s ease; opacity:0; scale:1.6;}
+  .car{position:absolute; bottom:var(--car-b); width:var(--car-w); margin-left:calc(var(--car-w) / -2); z-index:2; transition:left .13s ease-out;}
+  .car svg{display:block; width:100%; height:auto; overflow:visible; filter:drop-shadow(0 4px 3px rgba(0,0,0,.3));}
+  .car.hit svg{animation:hit .45s ease;}
+  @keyframes hit{20%{transform:rotate(-12deg) translateX(-4px);} 45%{transform:rotate(10deg) translateX(4px);} 70%{transform:rotate(-5deg);}}
+  .car.safe{animation:blink .22s steps(2) infinite;}
+  @keyframes blink{50%{opacity:.35;}}
+  .car.bump-l svg{animation:bumpL .2s ease;} .car.bump-r svg{animation:bumpR .2s ease;}
+  @keyframes bumpL{50%{transform:translateX(-7px) rotate(-6deg);}}
+  @keyframes bumpR{50%{transform:translateX(7px) rotate(6deg);}}
+  .road.hurt{animation:hurt .4s ease;}
+  @keyframes hurt{0%{box-shadow:inset 0 0 0 0 rgba(232,69,60,0);} 30%{box-shadow:inset 0 0 0 12px rgba(232,69,60,.85);} 100%{box-shadow:inset 0 0 0 0 rgba(232,69,60,0);}}
+  .pop{position:absolute; z-index:4; transform:translate(-50%, 0); pointer-events:none; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:24px; line-height:1;
+    color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.35); animation:rise .9s ease-out forwards; white-space:nowrap;}
+  .pop.minus{color:#FFB3A6;}
+  @keyframes rise{to{transform:translate(-50%, -60px); opacity:0;}}
+
+  /* Затемнення поверх дороги: світлофор і пауза */
+  .over{position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; background:rgba(27,27,58,.5); padding:16px; text-align:center;}
+  .lights{display:flex; gap:8px; background:#1B1B3A; padding:9px 12px; border-radius:999px; box-shadow:0 6px 18px rgba(0,0,0,.25);}
+  .lights i{width:26px; height:26px; border-radius:50%; background:#3A3A58;}
+  .lights i.red{background:#FF4D4D; box-shadow:0 0 14px #FF4D4D;}
+  .lights i.yellow{background:var(--yellow); box-shadow:0 0 14px var(--yellow);}
+  .lights i.green{background:#3DDC84; box-shadow:0 0 14px #3DDC84;}
+  .over-card{background:var(--surface); border-radius:var(--radius-m); padding:12px 16px; font-weight:700; font-size:15px; line-height:1.4; max-width:280px;}
+  .over-card .l{color:var(--left);} .over-card .r{color:var(--right);}
+  .over h2{color:#fff; font-size:30px; text-shadow:0 3px 0 rgba(0,0,0,.25);}
+
+  /* Мишка збоку: підсвічує кнопку, яку натиснули */
+  .side{width:150px; flex-shrink:0; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-l); padding:14px 12px; text-align:center;}
+  .side .mouse{width:96px; margin:0 auto; display:block;}
+  .side-labels{display:flex; justify-content:space-between; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:14px; margin-top:6px;}
+  .side-labels .l{color:var(--left);} .side-labels .r{color:var(--right);}
+  .side small{display:block; margin-top:10px; font-size:12.5px; line-height:1.35; color:var(--ink-soft);}
+  @media (max-width:640px){ .play{flex-direction:column; align-items:center;} .side{display:none;} }
+  .mouse .bl, .mouse .br{transition:fill .12s ease;}
+  .mouse .bl{fill:#D9F3F2;} .mouse .br{fill:#FFE3DB;}
+  .mouse .bl.on{fill:var(--left);} .mouse .br.on{fill:var(--right);}
+  .mouse .arr{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:22px; pointer-events:none;}
+
+  /* ---------- Результат ---------- */
+  .result{text-align:center; max-width:560px; margin-left:auto; margin-right:auto;}
+  .res-emoji{font-size:54px; line-height:1;}
+  .result h2{font-size:30px; margin:4px 0 2px;}
+  .res-stars{font-size:44px; line-height:1.1; letter-spacing:4px; color:var(--yellow); text-shadow:0 2px 0 #E0A800;}
+  .res-stars i{font-style:normal; color:var(--line); text-shadow:none;}
+  .gain{display:inline-flex; align-items:center; gap:6px; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:24px; color:#8A6200; background:#FFF4D6; border-radius:999px; padding:2px 18px; margin:8px 0 4px;}
+  .gain svg{width:28px; height:28px;}
+  .res-record{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:16px; color:#16803C;}
+  .res-list{list-style:none; padding:0; margin:12px auto 18px; display:grid; gap:4px; font-size:15px; max-width:380px; text-align:left;}
+  .res-list li{display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding:3px 2px;}
+  .res-list b{font-family:'Baloo 2',sans-serif; font-size:17px;}
+  .res-list .l{color:var(--left);} .res-list .r{color:var(--right);}
+  .res-btns{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; align-items:center;}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-inner">
+  <a class="back-link" href="https://cikavo.me/labs/" data-ui>← Лабораторія</a>
+  <span class="game-title">Мишачі перегони</span>
+  <a class="top-btn" href="guide/index.html" title="Інструкція для учнів і вчителів" data-ui>❓<span class="long"> Як грати</span></a>
+</div></div>
+
+<main class="container">
+
+  <!-- Вибір рівня -->
+  <section class="panel" id="setup">
+    <div class="intro">
+      <svg class="mouse" id="introMouse" viewBox="0 0 100 150" aria-hidden="true"></svg>
+      <div>
+        <h1>Мишачі перегони</h1>
+        <p>Керуй автівкою мишкою: <span class="l">ліва кнопка — вліво</span>, <span class="r">права кнопка — вправо</span>.</p>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="legend-box good"><h3>Збирай</h3><div class="legend-row" id="legendGood"></div></div>
+      <div class="legend-box bad"><h3>Об'їжджай — забирають життя</h3><div class="legend-row" id="legendBad"></div></div>
+    </div>
+    <h3 class="levels-title">Обери рівень</h3>
+    <div class="levels" id="levels"></div>
+    <div class="teacher-note"></div>
+  </section>
+
+  <!-- Гра -->
+  <section id="game" hidden>
+    <div class="hud" id="hud">
+      <span class="chip score" title="Бали"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-star"/></svg><span id="score">0</span></span>
+      <span class="chip hearts" id="hearts" title="Життя"></span>
+      <span class="chip time" id="timeChip" title="Скільки лишилось часу">⏱ <span id="time">1:00</span></span>
+      <button class="round-btn" id="pauseBtn" title="Пауза (Пробіл)" data-ui>⏸</button>
+      <button class="round-btn exit" id="exitBtn" title="Вийти до вибору рівня" data-ui>✕</button>
+    </div>
+    <div class="play">
+      <div class="field" id="field">
+        <div class="road" id="road">
+          <div class="car" id="car"></div>
+          <div class="slow-badge" id="slowBadge" hidden>⚡ Сповільнення</div>
+          <div class="over" id="countOver" hidden>
+            <div class="lights" id="lights"><i></i><i></i><i></i></div>
+            <div class="over-card"><span class="l">← ліва кнопка — вліво</span><br><span class="r">права кнопка — вправо →</span></div>
+          </div>
+          <div class="over" id="pauseOver" hidden>
+            <h2>Пауза</h2>
+            <button class="btn btn-primary btn-big" id="resumeBtn" data-ui>▶ Грати далі</button>
+          </div>
+        </div>
+      </div>
+      <aside class="side" aria-hidden="true">
+        <svg class="mouse" id="sideMouse" viewBox="0 0 100 150"></svg>
+        <div class="side-labels"><span class="l">← ліва</span><span class="r">права →</span></div>
+        <small>Пробіл — пауза</small>
+      </aside>
+    </div>
+    <div class="teacher-note"></div>
+  </section>
+
+  <!-- Результат -->
+  <section class="panel result" id="result" hidden>
+    <div class="res-emoji" id="resEmoji">🏁</div>
+    <h2 id="resTitle">Фініш!</h2>
+    <div class="res-stars" id="resStars"></div>
+    <div class="gain" id="resScore"></div>
+    <div class="res-record" id="resRecord"></div>
+    <ul class="res-list" id="resList"></ul>
+    <div class="res-btns">
+      <button class="btn btn-primary btn-big" id="againBtn">🔁 Ще раз</button>
+      <button class="btn btn-ghost" id="levelsBtn">Обрати рівень</button>
+    </div>
+    <div class="teacher-note"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Малюнки предметів: кожен підключається через <use href="#i-…"> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-star" viewBox="0 0 48 48">
+      <path d="M24 3.5l6.1 12.6 13.9 1.9-10.1 9.7 2.5 13.8L24 34.9l-12.4 6.6 2.5-13.8L4 18l13.9-1.9z" fill="#FFC93C" stroke="#E0A800" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="19.5" cy="23" r="2" fill="#8A6200"/><circle cx="28.5" cy="23" r="2" fill="#8A6200"/>
+      <path d="M20.5 28.5q3.5 3 7 0" fill="none" stroke="#8A6200" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-gem" viewBox="0 0 48 48">
+      <path d="M13 7h22l10 12-21 24L3 19z" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M3 19h42M18 7l-4 12 10 24 10-24-4-12" fill="none" stroke="#A8DCF7" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M14 19l10 24" stroke="#fff" stroke-width="2" opacity=".5"/>
+    </symbol>
+    <symbol id="i-bolt" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="20.5" fill="#EDE9FF" stroke="#6C5CE7" stroke-width="2.5"/>
+      <path d="M27.5 7L13 27h10l-3 14.5L35 21H25z" fill="#6C5CE7" stroke="#5340c9" stroke-width="1.5" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 48 48">
+      <path d="M24 42S5 30.5 5 17.5A9.6 9.6 0 0 1 24 14a9.6 9.6 0 0 1 19 3.5C43 30.5 24 42 24 42z" fill="#FF5D9E" stroke="#D63A7C" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M12 16.5a5 5 0 0 1 5-4" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>
+    </symbol>
+    <symbol id="i-cone" viewBox="0 0 48 48">
+      <path d="M24 4.5L35 38H13z" fill="#FF7A1A" stroke="#D9530F" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M20 16.5h8l1.7 5.5H18.3zM16.6 27h14.8l1.6 5H15z" fill="#fff"/>
+      <rect x="6" y="37" width="36" height="7" rx="2.5" fill="#E2541B"/>
+    </symbol>
+    <symbol id="i-barrier" viewBox="0 0 48 48">
+      <rect x="9" y="26" width="4.5" height="17" rx="1.5" fill="#514F72"/><rect x="34.5" y="26" width="4.5" height="17" rx="1.5" fill="#514F72"/>
+      <rect x="3" y="11" width="42" height="16" rx="3" fill="#fff" stroke="#C9352D" stroke-width="2"/>
+      <path d="M11 12h7.5l-7.5 14H4.5zM25 12h7.5l-7.5 14h-7.5zM39 12h5v4l-5.5 10H33z" fill="#E8453C"/>
+      <circle cx="11" cy="8" r="3.5" fill="#FFC93C" stroke="#E0A800" stroke-width="1.5"/><circle cx="37" cy="8" r="3.5" fill="#FFC93C" stroke="#E0A800" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="i-rock" viewBox="0 0 48 48">
+      <path d="M5 35c-2-9 3-16 9.5-19.5C19 7.5 30 6 35.5 13c6.5 3 9 12 6.5 20-1.5 5-6.5 8-12 8H13c-4 0-7-2.5-8-6z" fill="#9A97B0" stroke="#6E6A88" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M17 20c3-4 8-6 12-4M30 31l5-4M14 31l4 2" fill="none" stroke="#6E6A88" stroke-width="2" stroke-linecap="round"/>
+      <path d="M20 14.5c2.5-2 6-3 9-2" fill="none" stroke="#C9C7D9" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-oil" viewBox="0 0 48 48">
+      <path d="M7 29c-4-6.5 2-12.5 9.5-11 3-6.5 13.5-7.5 17.5-1 7.5 0 11.5 6.5 7.5 11.5 3 5.5-3 10.5-9.5 8.5-4.5 4.5-13.5 4.5-17 0-6.5 1-11.5-3.5-8-8z" fill="#2B2B45" stroke="#14142A" stroke-width="2" stroke-linejoin="round"/>
+      <ellipse cx="18" cy="24" rx="5" ry="2.5" fill="#7A6FD8" opacity=".75" transform="rotate(-15 18 24)"/>
+      <ellipse cx="30" cy="31" rx="3.5" ry="1.8" fill="#4FC3C0" opacity=".6"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+/* ================= Налаштування ================= */
+// ?boost — складніші рівні для 5–7 класів: швидше, більше перешкод, менше життів, ширша дорога на «Важко»
+const BOOST = new URLSearchParams(location.search).has('boost');
+
+// lanes — смуги; lives — життя; time — тривалість, с; fall — за скільки секунд предмет пролітає дорогу
+// (на початку й наприкінці заїзду, тобто гра поступово пришвидшується); every — пауза між рядами предметів, с;
+// bad — частка перешкод; pair — імовірність, що в ряду два предмети
+const LEVELS = BOOST ? {
+  easy:  { name:'Легко',    ico:'🟢', lanes:3, lives:4, time:60,  fall:[2.8, 2.1], every:.9,  bad:.4,  pair:.15 },
+  mid:   { name:'Середньо', ico:'🟡', lanes:4, lives:3, time:90,  fall:[2.2, 1.6], every:.7,  bad:.45, pair:.3 },
+  hard:  { name:'Важко',    ico:'🔴', lanes:5, lives:3, time:120, fall:[1.7, 1.2], every:.55, bad:.5,  pair:.4 },
+} : {
+  easy:  { name:'Легко',    ico:'🟢', lanes:3, lives:5, time:60,  fall:[4.2, 3.4], every:1.3,  bad:.3,  pair:0 },
+  mid:   { name:'Середньо', ico:'🟡', lanes:3, lives:4, time:90,  fall:[3.2, 2.4], every:1,    bad:.4,  pair:.15 },
+  hard:  { name:'Важко',    ico:'🔴', lanes:4, lives:3, time:120, fall:[2.5, 1.8], every:.8,  bad:.45, pair:.3 },
+};
+// Корисні предмети: pts — бали; chance — частка серед корисних (решта — зірки)
+const GOOD = {
+  star:  { name:'зірка',     pts:1, note:'+1' },
+  gem:   { name:'кристал',   pts:3, note:'+3', chance:.1 },
+  bolt:  { name:'блискавка', pts:2, note:'+2 і повільніше', chance:.07 },
+  heart: { name:'серце',     pts:0, note:'+1 життя', chance:.06 },
+};
+const BAD = { cone:'конус', barrier:'бар\'єр', rock:'камінь', oil:'калюжа мастила' };
+const SLOW_TIME = 4;      // скільки секунд діє блискавка
+const SAFE_TIME = 1.2;    // після зіткнення автівка блимає й не отримує нових ушкоджень
+const STORE_KEY = BOOST ? 'mouse-race-kids-boost-v1' : 'mouse-race-kids-v1';
+
+/* ================= Збереження ================= */
+let store = { best:{} };
+try{ store = Object.assign(store, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); }catch(e){}
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }catch(e){} }
+
+/* ================= Звук ================= */
+// Звук увімкнено за замовчуванням. Учням перемикача не показуємо: вчитель вимикає звук адресою ?zvuk=tykho
+// (вмикає назад ?zvuk=klas) або Ctrl+Alt+Z — як у «Клавіатурних перегонах». Режим запам'ятовується на цьому пристрої
+const SOUND_KEY = 'mouse-race-kids-sound';
+let soundOn = true;
+try{ soundOn = localStorage.getItem(SOUND_KEY) !== 'off'; }catch(e){}
+function setSound(on){
+  soundOn = on;
+  try{ localStorage.setItem(SOUND_KEY, on ? 'on' : 'off'); }catch(e){}
+  showToast(on ? '🔊 Звук увімкнено' : '🔇 Без звуку');
+  updateTeacherNote();
+  if(on) fanfare();
+}
+
+let actx = null;
+function audio(){
+  actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+  if(actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function tone(freq, dur=0.12, type='sine', vol=0.07, delay=0){
+  if(!soundOn) return;
+  try{
+    const a = audio(), t = a.currentTime + delay;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }catch(e){}
+}
+// Шум — для зіткнення й хлопавки
+function noise(dur, vol, delay = 0, freq = 2500){
+  if(!soundOn) return;
+  try{
+    const a = audio(), t = a.currentTime + delay, n = Math.ceil(a.sampleRate * dur);
+    const buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for(let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    src.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = .7;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f).connect(g).connect(a.destination);
+    src.start(t);
+  }catch(e){}
+}
+const fanfare = ()=>[523,659,784,1047].forEach((f,i)=>tone(f, .22, 'triangle', .08, i*.12));
+const popper = (delay = 0)=>{ noise(.06, .5, delay, 1200); tone(90, .12, 'sine', .1, delay); noise(.6, .12, delay + .05, 4500); };
+function bigFanfare(delay = 0){
+  let t = delay;
+  for(const [f, d] of [[392,.12],[523,.12],[659,.12],[784,.3],[659,.14],[784,.7]]){
+    tone(f, d + .05, 'sawtooth', .035, t); tone(f * 2, d, 'triangle', .03, t); t += d;
+  }
+  [523, 659].forEach(f=>tone(f, .7, 'triangle', .03, t - .7));   // акорд під останню ноту
+}
+const sadTrombone = ()=>[392, 370, 349, 330].forEach((f, i)=>tone(f, i < 3 ? .3 : .8, 'sawtooth', .03, i * .32));
+const sparkle = (delay = 0)=>[1319, 1568, 2093, 2637].forEach((f, i)=>tone(f, .18, 'sine', .04, delay + i * .07));
+const SFX = {
+  move:  ()=>tone(600, .04, 'triangle', .04),
+  wall:  ()=>tone(150, .08, 'square', .04),
+  star:  ()=>{ tone(880, .08, 'sine', .08); tone(1320, .12, 'sine', .07, .06); },
+  gem:   ()=>sparkle(),
+  bolt:  ()=>{ noise(.35, .12, 0, 1800); [1200, 900, 600, 400].forEach((f, i)=>tone(f, .1, 'sine', .05, i * .06)); },
+  heart: ()=>{ tone(660, .12, 'sine', .08); tone(990, .2, 'sine', .07, .1); },
+  hit:   ()=>{ noise(.25, .45, 0, 700); tone(110, .3, 'sawtooth', .07); },
+  beep:  ()=>tone(440, .15, 'square', .05),
+  go:    ()=>tone(880, .35, 'square', .05),
+};
+
+/* ================= Допоміжне ================= */
+const $ = id=>document.getElementById(id);
+const icon = (id, cls = '')=>`<svg class="${cls}" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-${id}"/></svg>`;
+const fmtTime = s=>`${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+// 1 бал, 2 бали, 5 балів
+const plural = (n, [one, few, many])=>{ const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
+const pick = list=>list[Math.floor(Math.random() * list.length)];
+const starsText = n=>'★'.repeat(n) + `<i>${'★'.repeat(3 - n)}</i>`;
+
+let toastTimer = 0;
+function showToast(text){
+  const t = $('toast');
+  t.textContent = text;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1600);
+}
+function confetti(n = 70){
+  const colors = ['#6C5CE7','#16A3A0','#FF6B4A','#FFC93C','#FF5D9E','#2D9CDB'];
+  for(let i=0;i<n;i++){
+    const d = document.createElement('div');
+    d.className = 'confetti';
+    d.style.left = Math.random()*100 + 'vw';
+    d.style.background = colors[i % colors.length];
+    d.style.animationDuration = (2 + Math.random()*2) + 's';
+    d.style.animationDelay = Math.random()*0.6 + 's';
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(), 5000);
+  }
+}
+
+// Мишка: ліва кнопка бірюзова зі стрілкою вліво, права коралова зі стрілкою вправо
+const MOUSE_SVG = `
+  <path d="M50 18C50 9 58 5 66 3" fill="none" stroke="#514F72" stroke-width="3" stroke-linecap="round"/>
+  <rect x="12" y="18" width="76" height="126" rx="38" fill="#fff" stroke="#1B1B3A" stroke-width="3"/>
+  <path class="bl" d="M48.5 19.6A36.5 36.5 0 0 0 13.5 56V68h35z"/>
+  <path class="br" d="M51.5 19.6A36.5 36.5 0 0 1 86.5 56V68h-35z"/>
+  <path d="M12 69.5h76M50 18v51.5" stroke="#1B1B3A" stroke-width="3"/>
+  <rect x="45" y="30" width="10" height="20" rx="5" fill="#fff" stroke="#1B1B3A" stroke-width="2.5"/>
+  <text class="arr" x="29" y="58" text-anchor="middle" fill="#0E7C7A">←</text>
+  <text class="arr" x="71" y="58" text-anchor="middle" fill="#C2410C">→</text>`;
+$('introMouse').innerHTML = MOUSE_SVG;
+$('sideMouse').innerHTML = MOUSE_SVG;
+
+// Автівка зверху: дивиться вгору, назустріч предметам
+const CAR_SVG = `<svg viewBox="0 0 40 64" aria-hidden="true">
+  <rect x="1.5" y="9" width="6" height="13" rx="2.5" fill="#1B1B3A"/><rect x="32.5" y="9" width="6" height="13" rx="2.5" fill="#1B1B3A"/>
+  <rect x="1.5" y="42" width="6" height="13" rx="2.5" fill="#1B1B3A"/><rect x="32.5" y="42" width="6" height="13" rx="2.5" fill="#1B1B3A"/>
+  <rect x="5" y="1.5" width="30" height="61" rx="11" fill="#FF6B4A" stroke="#C9452A" stroke-width="2"/>
+  <rect x="9" y="15" width="22" height="11" rx="4" fill="#BDE6FF" stroke="#1B1B3A" stroke-width="1.5"/>
+  <rect x="10.5" y="28" width="19" height="15" rx="4" fill="#E8553A"/>
+  <rect x="10" y="46" width="20" height="7" rx="3" fill="#BDE6FF" stroke="#1B1B3A" stroke-width="1.5"/>
+  <rect x="8.5" y="3" width="6" height="4" rx="2" fill="#FFF3B0"/><rect x="25.5" y="3" width="6" height="4" rx="2" fill="#FFF3B0"/>
+  <path d="M20 3v11" stroke="#fff" stroke-width="3" opacity=".55"/>
+</svg>`;
+$('car').innerHTML = CAR_SVG;
+
+// Довідка для вчителя під грою: які налаштування діють
+function updateTeacherNote(){
+  const notes = [BOOST && 'рівні для 5–7 класів', !soundOn && 'без звуку'].filter(Boolean);
+  const text = notes.length ? 'Налаштування вчителя: ' + notes.join(' · ') : '';
+  document.querySelectorAll('.teacher-note').forEach(n=>n.textContent = text);
+}
+
+/* ================= Екрани ================= */
+function showScreen(id){
+  for(const s of ['setup', 'game', 'result']) $(s).hidden = s !== id;
+  window.scrollTo(0, 0);
+}
+
+function renderSetup(){
+  $('legendGood').innerHTML = Object.entries(GOOD).map(([id, g])=>
+    `<span class="legend-item">${icon(id)}<span>${g.note}</span></span>`).join('');
+  $('legendBad').innerHTML = Object.entries(BAD).map(([id, name])=>
+    `<span class="legend-item" title="${name}">${icon(id)}</span>`).join('') + '<span class="legend-item"><small>−1 життя</small></span>';
+  const lanesWord = n=>`${n} ${plural(n, ['смуга', 'смуги', 'смуг'])}`;
+  const minutes = s=>(s / 60).toLocaleString('uk', { maximumFractionDigits:1 }) + ' хв';
+  $('levels').innerHTML = Object.entries(LEVELS).map(([id, L])=>{
+    const b = store.best[id];
+    return `<button class="level" data-level="${id}">
+      <span class="lv-ico">${L.ico}</span>
+      <span class="lv-name">${L.name}</span>
+      <span class="lv-info">${lanesWord(L.lanes)} · ${L.lives} ${plural(L.lives, ['життя', 'життя', 'життів'])} · ${minutes(L.time)}</span>
+      <span class="lv-best${b ? ' got' : ''}">${b ? `Рекорд: ${b.score} · ${'★'.repeat(b.stars) + '☆'.repeat(3 - b.stars)}` : 'Ще не грали'}</span>
+    </button>`;
+  }).join('');
+}
+$('levels').addEventListener('click', e=>{
+  const b = e.target.closest('[data-level]');
+  if(b) start(b.dataset.level);
+});
+
+/* ================= Гра ================= */
+const road = $('road'), field = $('field'), carEl = $('car');
+let G = null;           // поточний заїзд
+let lastLevel = 'easy';
+let H = 0, SZ = 0, CAR_W = 0, CAR_B = 0;   // розміри дороги в пікселях, перераховуються при зміні вікна
+
+function measure(){
+  if(!G) return;
+  H = road.clientHeight;
+  const laneW = road.clientWidth / G.L.lanes;
+  SZ = Math.round(Math.min(laneW * .62, 66));
+  CAR_W = Math.round(Math.min(laneW * .5, 54));
+  CAR_B = Math.round(H * .05) + 6;
+  road.style.setProperty('--sz', SZ + 'px');
+  road.style.setProperty('--car-w', CAR_W + 'px');
+  road.style.setProperty('--car-b', CAR_B + 'px');
+}
+window.addEventListener('resize', ()=>{ measure(); if(G) G.items.forEach(placeItem); });
+
+const laneLeft = lane=>`${(lane + .5) * 100 / G.L.lanes}%`;
+
+function start(levelId){
+  stopGame();
+  lastLevel = levelId;
+  const L = LEVELS[levelId];
+  G = { id:levelId, L, lane:Math.floor((L.lanes - 1) / 2), lives:L.lives, score:0, items:[], t:0, dist:0, spawn:.6,
+        slow:0, safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0, phase:'count', paused:false, raf:0, last:0, timers:[] };
+  field.style.setProperty('--field-w', (L.lanes * 125 + 42) + 'px');
+  road.querySelectorAll('.sep, .item, .pop').forEach(n=>n.remove());
+  for(let i = 1; i < L.lanes; i++){
+    const s = document.createElement('div');
+    s.className = 'sep'; s.style.left = `${i * 100 / L.lanes}%`;
+    road.insertBefore(s, carEl);
+  }
+  carEl.className = 'car';
+  carEl.style.left = laneLeft(G.lane);
+  road.classList.remove('slow', 'hurt');
+  $('slowBadge').hidden = true;
+  $('pauseOver').hidden = true;
+  renderHearts();
+  $('score').textContent = '0';
+  $('time').textContent = fmtTime(L.time);
+  $('timeChip').classList.remove('low');
+  showScreen('game');
+  measure();
+  countdown();
+}
+
+// Світлофор: червоний, жовтий, зелений — і поїхали
+function countdown(){
+  const lights = [...$('lights').children];
+  lights.forEach(l=>l.className = '');
+  $('countOver').hidden = false;
+  const steps = ['red', 'yellow', 'green'];
+  steps.forEach((c, i)=>G.timers.push(setTimeout(()=>{
+    lights[i].className = c;
+    (i < 2 ? SFX.beep : SFX.go)();
+  }, 200 + i * 800)));
+  G.timers.push(setTimeout(()=>{
+    $('countOver').hidden = true;
+    G.phase = 'play';
+    G.last = performance.now();
+    if(document.hidden || !document.hasFocus()) pause();
+    else G.raf = requestAnimationFrame(loop);
+  }, 200 + 3 * 800));
+}
+
+function loop(now){
+  if(!G || G.phase !== 'play' || G.paused) return;
+  const dt = Math.min(.05, (now - G.last) / 1000);
+  G.last = now;
+  step(dt);
+  if(G && G.phase === 'play') G.raf = requestAnimationFrame(loop);
+}
+
+function step(dt){
+  const L = G.L;
+  G.t += dt;
+  if(G.t >= L.time){ $('time').textContent = fmtTime(0); finish(true); return; }
+  const left = L.time - G.t;
+  $('time').textContent = fmtTime(Math.ceil(left));
+  $('timeChip').classList.toggle('low', left <= 10);
+
+  if(G.slow > 0){ G.slow -= dt; if(G.slow <= 0){ road.classList.remove('slow'); $('slowBadge').hidden = true; } }
+  if(G.safe > 0){ G.safe -= dt; if(G.safe <= 0) carEl.classList.remove('safe'); }
+  const fall = L.fall[0] + (L.fall[1] - L.fall[0]) * (G.t / L.time);   // гра поступово пришвидшується
+  const adv = dt * (G.slow > 0 ? .5 : 1);
+  G.dist += adv / fall;
+  road.style.setProperty('--off', `${(G.dist * (H + SZ)) % 60}px`);
+
+  G.spawn -= adv;
+  if(G.spawn <= 0){ spawnRow(); G.spawn += L.every; }
+
+  const carTop = H - CAR_B - CAR_W * 1.6, carBottom = H - CAR_B, pad = SZ * .18;
+  for(const it of G.items){
+    if(it.done) continue;
+    it.p += adv / fall;
+    placeItem(it);
+    const y = it.p * (H + SZ) - SZ;
+    if(it.lane === G.lane && y + SZ - pad > carTop && y + pad < carBottom){ touch(it); if(!G || G.phase !== 'play') return; continue; }
+    if(y + pad > carBottom && !it.passed){ it.passed = true; if(!it.bad) G.goodSeen++; }   // корисний предмет проїхали
+    if(it.p >= 1) removeItem(it);
+  }
+  G.items = G.items.filter(it=>!it.removed);
+}
+
+// Ряд предметів: один, а на складніших рівнях іноді два. Хоча б одна смуга завжди без перешкоди
+function spawnRow(){
+  const L = G.L;
+  const lanes = [...Array(L.lanes).keys()].sort(()=>Math.random() - .5);
+  const n = Math.random() < L.pair ? 2 : 1;
+  let bads = 0;
+  for(const lane of lanes.slice(0, n)){
+    let bad = Math.random() < L.bad;
+    if(bad && bads + 1 >= L.lanes) bad = false;
+    if(bad) bads++;
+    addItem(lane, bad ? pick(Object.keys(BAD)) : goodType(), bad);
+  }
+}
+function goodType(){
+  const r = Math.random();
+  if(r < GOOD.heart.chance && G.lives < G.L.lives) return 'heart';
+  if(r < GOOD.heart.chance + GOOD.bolt.chance && G.slow <= 0) return 'bolt';
+  if(r < GOOD.heart.chance + GOOD.bolt.chance + GOOD.gem.chance) return 'gem';
+  return 'star';
+}
+function addItem(lane, type, bad){
+  const el = document.createElement('div');
+  el.className = 'item';
+  el.style.left = laneLeft(lane);
+  el.innerHTML = icon(type);
+  road.insertBefore(el, carEl);
+  const it = { lane, type, bad, p:0, el };
+  placeItem(it);
+  G.items.push(it);
+}
+function placeItem(it){ it.el.style.transform = `translateY(${it.p * (H + SZ) - SZ}px)`; }
+function removeItem(it){ it.removed = true; it.el.remove(); }
+
+// Автівка наїхала на предмет
+function touch(it){
+  it.done = true;
+  if(it.bad){
+    if(G.safe > 0){ it.done = false; return; }   // ще блимає після попереднього зіткнення — проїжджає крізь
+    G.lives--; G.hits++;
+    G.safe = SAFE_TIME;
+    renderHearts();
+    SFX.hit();
+    popText('−1 ❤', it, true);
+    carEl.classList.remove('hit'); void carEl.offsetWidth; carEl.classList.add('hit', 'safe');
+    road.classList.remove('hurt'); void road.offsetWidth; road.classList.add('hurt');
+    vanish(it);
+    if(G.lives <= 0) finish(false);
+    return;
+  }
+  const g = GOOD[it.type];
+  G.goodSeen++; G.goodGot++;
+  it.passed = true;
+  if(g.pts){ G.score += g.pts; bumpScore(); popText('+' + g.pts, it); }
+  if(it.type === 'heart'){ G.lives = Math.min(G.L.lives, G.lives + 1); renderHearts(true); popText('+1 ❤', it); }
+  if(it.type === 'bolt'){ G.slow = SLOW_TIME; road.classList.add('slow'); $('slowBadge').hidden = false; }
+  SFX[it.type]();
+  vanish(it);
+}
+function vanish(it){ it.el.classList.add('gone'); setTimeout(()=>removeItem(it), 260); }
+function popText(text, it, minus){
+  const p = document.createElement('div');
+  p.className = 'pop' + (minus ? ' minus' : '');
+  p.textContent = text;
+  p.style.left = laneLeft(it.lane);
+  p.style.top = Math.max(0, H - CAR_B - CAR_W * 1.6 - 34) + 'px';
+  road.appendChild(p);
+  setTimeout(()=>p.remove(), 950);
+}
+function bumpScore(){
+  const s = $('score');
+  s.textContent = G.score;
+  s.classList.add('pop');
+  setTimeout(()=>s.classList.remove('pop'), 180);
+}
+function renderHearts(gained){
+  $('hearts').innerHTML = Array.from({ length:G.L.lives }, (_, i)=>icon('heart', i >= G.lives ? 'lost' : gained && i === G.lives - 1 ? 'gain' : '')).join('');
+}
+
+// Клацання: ліва кнопка — смуга вліво, права — вправо
+function move(dir){
+  if(!G || G.paused || (G.phase !== 'play' && G.phase !== 'count')) return;
+  G.clicks[dir < 0 ? 0 : 1]++;
+  flashMouse(dir);
+  const lane = G.lane + dir;
+  if(lane < 0 || lane >= G.L.lanes){
+    G.walls++;
+    SFX.wall();
+    const c = dir < 0 ? 'bump-l' : 'bump-r';
+    carEl.classList.remove('bump-l', 'bump-r'); void carEl.offsetWidth; carEl.classList.add(c);
+    return;
+  }
+  G.lane = lane;
+  carEl.style.left = laneLeft(lane);
+  SFX.move();
+}
+function flashMouse(dir){
+  const b = $('sideMouse').querySelector(dir < 0 ? '.bl' : '.br');
+  b.classList.add('on');
+  clearTimeout(b._t);
+  b._t = setTimeout(()=>b.classList.remove('on'), 160);
+}
+
+function pause(){
+  if(!G || G.phase !== 'play' || G.paused) return;
+  G.paused = true;
+  cancelAnimationFrame(G.raf);
+  $('pauseOver').hidden = false;
+}
+function resume(){
+  if(!G || !G.paused) return;
+  G.paused = false;
+  $('pauseOver').hidden = true;
+  G.last = performance.now();
+  G.raf = requestAnimationFrame(loop);
+}
+
+function stopGame(){
+  if(!G) return;
+  cancelAnimationFrame(G.raf);
+  G.timers.forEach(clearTimeout);
+  G.phase = 'stopped';
+}
+
+// Кінець заїзду: finished — доїхали до кінця часу, інакше скінчились життя.
+// Зірки: 1 — доїхав до фінішу; +1 — зібрав щонайменше 70% корисних предметів; +1 — не більше одного зіткнення
+function finish(finished){
+  G.phase = 'end';
+  cancelAnimationFrame(G.raf);
+  const g = G;
+  const share = g.goodSeen ? g.goodGot / g.goodSeen : 0;
+  const stars = finished ? 1 + (share >= .7 ? 1 : 0) + (g.hits <= 1 ? 1 : 0) : 0;
+  const prev = store.best[g.id];
+  const record = finished && (!prev || g.score > prev.score || (g.score === prev.score && stars > prev.stars));
+  if(record){ store.best[g.id] = { score:g.score, stars }; save(); }
+
+  $('resEmoji').textContent = finished ? '🏁' : '💔';
+  $('resTitle').textContent = finished ? (stars === 3 ? 'Чудово! Фініш!' : 'Фініш!') : 'Життя скінчились';
+  $('resStars').innerHTML = starsText(stars);
+  $('resScore').innerHTML = `${icon('star')} ${g.score} ${plural(g.score, ['бал', 'бали', 'балів'])}`;
+  $('resRecord').textContent = record && prev ? '🏆 Новий рекорд!' : !finished ? 'Спробуй ще раз — у тебе вийде!' : '';
+  $('resList').innerHTML = [
+    ['Рівень', `${g.L.ico} ${g.L.name}`],
+    ['Час', fmtTime(Math.min(g.t, g.L.time)) + (finished ? '' : ' з ' + fmtTime(g.L.time))],
+    ['Зібрано корисного', `${g.goodGot} з ${g.goodSeen}`],
+    ['Зіткнень', g.hits],
+    ['Клацань', `<span><span class="l">лівою ${g.clicks[0]}</span> · <span class="r">правою ${g.clicks[1]}</span></span>`],
+  ].map(([k, v])=>`<li><span>${k}</span><b>${v}</b></li>`).join('');
+
+  if(finished){
+    if(stars === 3 || record){ popper(); bigFanfare(.1); confetti(stars === 3 ? 160 : 90); }
+    else fanfare();
+  } else sadTrombone();
+  setTimeout(()=>{ if(G === g){ renderSetup(); showScreen('result'); } }, finished ? 300 : 900);
+}
+
+function toSetup(){ stopGame(); G = null; renderSetup(); showScreen('setup'); }
+
+/* ================= Миша, клавіші, фокус ================= */
+// Миша: mousedown спрацьовує для кожної кнопки окремо. Клацання по кнопках гри (data-ui) не керують автівкою
+document.addEventListener('mousedown', e=>{
+  if($('game').hidden || e.target.closest('[data-ui]')) return;
+  if(e.button === 0) move(-1);
+  else if(e.button === 2) move(1);
+  else return;
+  e.preventDefault();   // без виділення тексту й фокусу
+});
+// Під час гри контекстне меню правої кнопки не з'являється
+document.addEventListener('contextmenu', e=>{ if(!$('game').hidden) e.preventDefault(); });
+// Планшет: дотик ліворуч від автівки — вліво, праворуч — вправо
+road.addEventListener('pointerdown', e=>{
+  if(e.pointerType === 'mouse' || e.target.closest('[data-ui]')) return;
+  e.preventDefault();
+  const r = carEl.getBoundingClientRect();
+  move(e.clientX < r.left + r.width / 2 ? -1 : 1);
+});
+
+document.addEventListener('keydown', e=>{
+  if(e.ctrlKey && e.altKey && e.code === 'KeyZ'){ e.preventDefault(); setSound(!soundOn); return; }
+  if(e.code === 'Space' && !$('game').hidden && G){
+    e.preventDefault();
+    if(G.paused) resume(); else pause();
+  }
+});
+// Вікно втратило фокус (інша програма, рядок адреси) — пауза, щоб автівку не розбило без учня
+window.addEventListener('blur', pause);
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) pause(); });
+
+$('pauseBtn').addEventListener('click', ()=>G && (G.paused ? resume() : pause()));
+$('resumeBtn').addEventListener('click', resume);
+$('exitBtn').addEventListener('click', toSetup);
+$('againBtn').addEventListener('click', ()=>start(lastLevel));
+$('levelsBtn').addEventListener('click', toSetup);
+
+/* ================= Запуск ================= */
+// ?boost — без окремої позначки в заголовку, лише довідка для вчителя
+// Прихований перемикач звуку: ?zvuk=klas (зі звуком) або ?zvuk=tykho (без звуку), параметр одразу зникає з адреси; чи Ctrl+Alt+Z
+{
+  const q = new URLSearchParams(location.search), z = q.get('zvuk');
+  if(z === 'klas' || z === 'tykho'){
+    q.delete('zvuk');
+    const rest = q.toString().replace(/=(?=&|$)/g, '');   // ?boost лишається ?boost, а не ?boost=
+    history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+    setSound(z === 'klas');
+  }
+}
+updateTeacherNote();
+renderSetup();
+// Офлайн: обробник sw.js зберігає гру в браузері, щоб вона відкривалась без інтернету.
+// Працює лише на сайті (http/https); з папки (file://) гра й так відкривається без мережі
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

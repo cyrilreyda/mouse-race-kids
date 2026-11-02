@@ -116,11 +116,6 @@
   .road{position:relative; height:clamp(340px, calc(100vh - 246px), 640px); background:var(--road, #3D4258); border-left:5px solid var(--edge, #F1F0F8); border-right:5px solid var(--edge, #F1F0F8); overflow:hidden;}
   .sep{position:absolute; top:0; bottom:0; width:4px; margin-left:-2px;
     background:repeating-linear-gradient(to bottom, var(--dash, rgba(255,255,255,.65)) 0 28px, transparent 28px 60px); background-position:0 var(--off, 0px);}
-  .road.slow::after{content:''; position:absolute; inset:0; background:rgba(108,92,231,.2); pointer-events:none;}
-  .slow-badge{position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:3; white-space:nowrap; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:14px;
-    background:var(--purple); color:#fff; border-radius:999px; padding:2px 14px 2px 6px; display:flex; align-items:center; gap:5px;}
-  .slow-badge svg{width:22px; height:22px;}
-  .slow-badge[hidden]{display:none;}
   .item{position:absolute; top:0; width:var(--sz); height:var(--sz); margin-left:calc(var(--sz) / -2); will-change:transform; z-index:1;}
   .item svg{display:block; width:100%; height:100%; overflow:visible;}
   .item.gone{transition:opacity .25s ease, scale .25s ease; opacity:0; scale:1.6;}
@@ -348,7 +343,6 @@
         </div>
         <div class="road" id="road">
           <div class="car" id="car"></div>
-          <div class="slow-badge" id="slowBadge" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-clock"/></svg> Повільніше</div>
           <div class="over" id="countOver" hidden>
             <div class="lights" id="lights"><i></i><i></i><i></i></div>
             <div class="over-card"><span class="l">← ліва кнопка — вліво</span><br><span class="r">права кнопка — вправо →</span><span class="w">колесо від себе — швидше, до себе — повільніше</span></div>
@@ -435,13 +429,12 @@
       <path d="M3 19h42M18 7l-4 12 10 24 10-24-4-12" fill="none" stroke="#A8DCF7" stroke-width="2" stroke-linejoin="round"/>
       <path d="M14 19l10 24" stroke="#fff" stroke-width="2" opacity=".5"/>
     </symbol>
-    <symbol id="i-clock" viewBox="0 0 48 48">
-      <circle cx="11" cy="10.5" r="6.5" fill="#6C5CE7"/><circle cx="37" cy="10.5" r="6.5" fill="#6C5CE7"/>
-      <path d="M14 40.5l-4 5M34 40.5l4 5" stroke="#5340C9" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="24" cy="26" r="17" fill="#fff" stroke="#6C5CE7" stroke-width="4"/>
-      <path d="M24 12.5v3M24 36.5v3M10.5 26h3M34.5 26h3" stroke="#B9B2F2" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M24 26v-9M24 26l6 4" stroke="#1B1B3A" stroke-width="2.8" stroke-linecap="round"/>
-      <circle cx="24" cy="26" r="2.3" fill="#FF6B4A"/>
+    <symbol id="i-fuel" viewBox="0 0 48 48">
+      <path d="M29 9.5l6.5-5 4.5 4-6 5" fill="#C9C7D9" stroke="#6E6C8A" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M13 8h13l12 10.5V39q0 5-5 5H14q-5 0-5-5V12q0-4 4-4z" fill="#E8453C" stroke="#B5281F" stroke-width="2.5" stroke-linejoin="round"/>
+      <rect x="13.5" y="12" width="10" height="5" rx="2.5" fill="#B5281F"/>
+      <path d="M23.5 23q6 7.5 6 11.5a6 6 0 0 1-12 0q0-4 6-11.5z" fill="#FFC93C" stroke="#E0A800" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M13 22v16" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".45"/>
     </symbol>
     <symbol id="i-heart" viewBox="0 0 48 48">
       <path d="M24 42S5 30.5 5 17.5A9.6 9.6 0 0 1 24 14a9.6 9.6 0 0 1 19 3.5C43 30.5 24 42 24 42z" fill="#FF5D9E" stroke="#D63A7C" stroke-width="2.5" stroke-linejoin="round"/>
@@ -493,11 +486,10 @@ const LEVELS = BOOST ? {
 const GOOD = {
   star:  { name:'зірка',     pts:1, note:'+1' },
   gem:   { name:'кристал',   pts:3, note:'+3', chance:.1 },
-  clock: { name:'годинник',  pts:2, note:'+2 і повільніше', chance:.07 },
+  fuel:  { name:'каністра пального', pts:2, note:'+2', chance:.08 },
   heart: { name:'серце',     pts:0, note:'+1 життя', chance:.06 },
 };
 const BAD = { cone:'конус', barrier:'бар\'єр', rock:'камінь', oil:'калюжа мастила' };
-const SLOW_TIME = 4;      // скільки секунд діє годинник
 const SAFE_TIME = 1.2;    // після зіткнення автівка блимає й не отримує нових ушкоджень
 // Колесо миші перемикає швидкість: від себе — швидше, до себе — повільніше. Швидше — більше предметів за той самий час
 const GEARS = [.6, .8, 1, 1.25, 1.5];
@@ -509,7 +501,7 @@ const STICKERS = [
   { id:'clean',  ico:'🛡️', name:'Без подряпин',     how:'Фініш без жодного зіткнення',             test:r=>r.finished && r.hits === 0 },
   { id:'stars3', ico:'🌟', name:'Три зірки',        how:'Отримати за заїзд 3 зірки',               test:r=>r.stars === 3 },
   { id:'gems',   ico:'💎', name:'Скарбошукач',      how:'Зібрати 5 кристалів за заїзд',            test:r=>r.got.gem >= 5 },
-  { id:'clocks', ico:'⏰', name:'Володар часу',     how:'Зібрати 3 годинники за заїзд',            test:r=>r.got.clock >= 3 },
+  { id:'fuel',   ico:'⛽', name:'Повний бак',       how:'Зібрати 3 каністри пального за заїзд',    test:r=>r.got.fuel >= 3 },
   { id:'all',    ico:'🧲', name:'Усе зібрано',      how:'Фініш, зібравши все корисне',             test:r=>r.finished && r.goodSeen >= 10 && r.goodGot === r.goodSeen },
   { id:'turbo',  ico:'🚀', name:'Турбо',            how:'Їхати 10 секунд на найбільшій швидкості', test:r=>r.turbo >= 10 },
   { id:'brake',  ico:'🐢', name:'Обережний водій',  how:'Колесом миші пригальмувати до найменшої швидкості', test:r=>r.braked },
@@ -604,7 +596,7 @@ const SFX = {
   wall:  ()=>tone(150, .08, 'square', .04),
   star:  ()=>{ tone(880, .08, 'sine', .08); tone(1320, .12, 'sine', .07, .06); },
   gem:   ()=>sparkle(),
-  clock: ()=>SFX.star(),   // звук як у зірки: годинник теж приносить бали
+  fuel:  ()=>SFX.star(),   // звук як у зірки: каністра теж приносить бали
   heart: ()=>{ tone(660, .12, 'sine', .08); tone(990, .2, 'sine', .07, .1); },
   hit:   ()=>{ noise(.25, .45, 0, 700); tone(110, .3, 'sawtooth', .07); },
   beep:  ()=>tone(440, .15, 'square', .05),
@@ -935,8 +927,8 @@ function start(levelId){
   lastLevel = levelId;
   const L = LEVELS[levelId];
   G = { id:levelId, L, lane:Math.floor((L.lanes - 1) / 2), lives:L.lives, score:0, items:[], prevBad:[], t:0, dist:0, spawn:.6,
-        slow:0, safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0,
-        gear:GEAR_NORMAL, turbo:0, braked:false, wallRun:0, hints:0, got:{ star:0, gem:0, clock:0, heart:0 }, phase:'count', paused:false, raf:0, last:0, timers:[] };
+        safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0,
+        gear:GEAR_NORMAL, turbo:0, braked:false, wallRun:0, hints:0, got:{ star:0, gem:0, fuel:0, heart:0 }, phase:'count', paused:false, raf:0, last:0, timers:[] };
   field.style.setProperty('--field-w', (L.lanes * 125 + 42) + 'px');
   road.querySelectorAll('.sep, .item, .pop').forEach(n=>n.remove());
   for(let i = 1; i < L.lanes; i++){
@@ -946,10 +938,9 @@ function start(levelId){
   }
   carEl.className = 'car';
   carEl.style.left = laneLeft(G.lane);
-  road.classList.remove('slow', 'hurt');
+  road.classList.remove('hurt');
   $('hintOver').hidden = true;
   renderGear();
-  $('slowBadge').hidden = true;
   $('pauseOver').hidden = true;
   renderHearts();
   $('score').textContent = '0';
@@ -998,11 +989,10 @@ function step(dt){
   $('time').textContent = fmtTime(Math.ceil(left));
   $('timeChip').classList.toggle('low', left <= 10);
 
-  if(G.slow > 0){ G.slow -= dt; if(G.slow <= 0){ road.classList.remove('slow'); $('slowBadge').hidden = true; } }
   if(G.safe > 0){ G.safe -= dt; if(G.safe <= 0) carEl.classList.remove('safe'); }
   const fall = L.fall[0] + (L.fall[1] - L.fall[0]) * (G.t / L.time);   // гра поступово пришвидшується
   if(G.gear === GEARS.length - 1) G.turbo += dt;
-  const adv = dt * (G.slow > 0 ? .5 : 1) * GEARS[G.gear];
+  const adv = dt * GEARS[G.gear];
   G.dist += adv / fall;
   road.style.setProperty('--off', `${(G.dist * (H + SZ)) % 60}px`);
 
@@ -1070,8 +1060,8 @@ function escapable(row){
 function goodType(){
   const r = Math.random();
   if(r < GOOD.heart.chance && G.lives < G.L.lives) return 'heart';
-  if(r < GOOD.heart.chance + GOOD.clock.chance && G.slow <= 0) return 'clock';
-  if(r < GOOD.heart.chance + GOOD.clock.chance + GOOD.gem.chance) return 'gem';
+  if(r < GOOD.heart.chance + GOOD.fuel.chance) return 'fuel';
+  if(r < GOOD.heart.chance + GOOD.fuel.chance + GOOD.gem.chance) return 'gem';
   return 'star';
 }
 function addItem(lane, type, bad){
@@ -1109,7 +1099,6 @@ function touch(it){
   it.passed = true;
   if(g.pts){ G.score += g.pts; bumpScore(); popText('+' + g.pts, it); }
   if(it.type === 'heart'){ G.lives = Math.min(G.L.lives, G.lives + 1); renderHearts(true); popText('+1 ❤', it); }
-  if(it.type === 'clock'){ G.slow = SLOW_TIME; road.classList.add('slow'); $('slowBadge').hidden = false; }
   SFX[it.type]();
   vanish(it);
 }

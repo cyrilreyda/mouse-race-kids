@@ -497,18 +497,18 @@ const GEAR_NORMAL = 2;
 const HINT_WALLS = 2;     // стільки разів поспіль у край дороги — і з'являється мишка-підказка
 // Наліпки за досягнення. r — підсумок заїзду, p — профіль гравця після заїзду
 const STICKERS = [
-  { id:'first',  ico:'🏁', name:'Перший фініш',     how:'Доїхати до фінішу',                       test:r=>r.finished },
-  { id:'clean',  ico:'🛡️', name:'Без подряпин',     how:'Фініш без жодного зіткнення',             test:r=>r.finished && r.hits === 0 },
-  { id:'stars3', ico:'🌟', name:'Три зірки',        how:'Отримати за заїзд 3 зірки',               test:r=>r.stars === 3 },
-  { id:'gems',   ico:'💎', name:'Скарбошукач',      how:'Зібрати 5 кристалів за заїзд',            test:r=>r.got.gem >= 5 },
-  { id:'fuel',   ico:'⛽', name:'Повний бак',       how:'Зібрати 3 каністри пального за заїзд',    test:r=>r.got.fuel >= 3 },
-  { id:'all',    ico:'🧲', name:'Усе зібрано',      how:'Фініш, зібравши все корисне',             test:r=>r.finished && r.goodSeen >= 10 && r.goodGot === r.goodSeen },
-  { id:'turbo',  ico:'🚀', name:'Турбо',            how:'Їхати 10 секунд на найбільшій швидкості', test:r=>r.turbo >= 10 },
-  { id:'brake',  ico:'🐢', name:'Обережний водій',  how:'Колесом миші пригальмувати до найменшої швидкості', test:r=>r.braked },
-  { id:'mid',    ico:'🟡', name:'Упевнений водій',  how:'Фініш на рівні «Середньо»',               test:r=>r.finished && r.level === 'mid' },
-  { id:'hard',   ico:'🔴', name:'Ас',               how:'Фініш на рівні «Важко»',                  test:r=>r.finished && r.level === 'hard' },
-  { id:'races',  ico:'🏆', name:'Справжній гонщик', how:'Проїхати 10 заїздів',                     test:(r, p)=>p.races >= 10 },
-  { id:'bank',   ico:'💰', name:'Повна скарбничка', how:'Зібрати в скарбничку 500 балів',          test:(r, p)=>p.total >= 500 },
+  { id:'first',  ico:'🏁', name:'Перший фініш',     how:'Доїхати до фінішу',                                   test:r=>r.finished },
+  { id:'clean',  ico:'🛡️', name:'Без подряпин',     how:'Фініш без жодного зіткнення на «Середньо» чи «Важко»', test:r=>r.finished && r.hits === 0 && r.level !== 'easy' },
+  { id:'stars3', ico:'🌟', name:'Три зірки',        how:'Отримати 3 зірки на «Середньо» чи «Важко»',           test:r=>r.stars === 3 && r.level !== 'easy' },
+  { id:'gems',   ico:'💎', name:'Скарбошукач',      how:'Зібрати 8 кристалів за заїзд',                        test:r=>r.got.gem >= 8 },
+  { id:'fuel',   ico:'⛽', name:'Повний бак',       how:'Зібрати 7 каністр пального за заїзд',                 test:r=>r.got.fuel >= 7 },
+  { id:'all',    ico:'🧲', name:'Усе зібрано',      how:'Фініш, зібравши все корисне — щонайменше 30 предметів', test:r=>r.finished && r.goodSeen >= 30 && r.goodGot === r.goodSeen },
+  { id:'turbo',  ico:'🚀', name:'Турбо',            how:'Проїхати 30 секунд на найбільшій швидкості',           test:r=>r.turbo >= 30 },
+  { id:'brake',  ico:'🐢', name:'Обережний водій',  how:'5 разів за заїзд пригальмувати колесом до найменшої швидкості', test:r=>r.brakes >= 5 },
+  { id:'mid',    ico:'🟡', name:'Упевнений водій',  how:'Фініш на «Середньо» з двома зірками чи більше',       test:r=>r.finished && r.level === 'mid' && r.stars >= 2 },
+  { id:'hard',   ico:'🔴', name:'Ас',               how:'Фініш на рівні «Важко»',                              test:r=>r.finished && r.level === 'hard' },
+  { id:'races',  ico:'🏆', name:'Справжній гонщик', how:'Проїхати 25 заїздів',                                 test:(r, p)=>p.races >= 25 },
+  { id:'bank',   ico:'💰', name:'Повна скарбничка', how:'Зібрати в скарбничку 1000 балів',                     test:(r, p)=>p.total >= 1000 },
 ];
 const STORE_KEY = BOOST ? 'mouse-race-kids-boost-v1' : 'mouse-race-kids-v1';
 
@@ -928,7 +928,7 @@ function start(levelId){
   const L = LEVELS[levelId];
   G = { id:levelId, L, lane:Math.floor((L.lanes - 1) / 2), lives:L.lives, score:0, items:[], prevBad:[], t:0, dist:0, spawn:.6,
         safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0,
-        gear:GEAR_NORMAL, turbo:0, braked:false, wallRun:0, hints:0, got:{ star:0, gem:0, fuel:0, heart:0 }, phase:'count', paused:false, raf:0, last:0, timers:[] };
+        gear:GEAR_NORMAL, turbo:0, brakes:0, wallRun:0, hints:0, got:{ star:0, gem:0, fuel:0, heart:0 }, phase:'count', paused:false, raf:0, last:0, timers:[] };
   field.style.setProperty('--field-w', (L.lanes * 125 + 42) + 'px');
   road.querySelectorAll('.sep, .item, .pop').forEach(n=>n.remove());
   for(let i = 1; i < L.lanes; i++){
@@ -1164,7 +1164,7 @@ function shiftGear(dir){
   w._t = setTimeout(()=>w.classList.remove('up', 'down'), 200);
   if(gear === G.gear){ SFX.wall(); return; }
   G.gear = gear;
-  if(gear === 0) G.braked = true;
+  if(gear === 0) G.brakes++;   // скільки разів пригальмували до найменшої швидкості
   tone(400 + gear * 120, .08, 'triangle', .05);   // що швидше, то вищий звук
   renderGear(true);
 }
@@ -1218,7 +1218,7 @@ function finish(finished){
   store.total += g.score;
   store.races++;
   const opened = Object.entries(GARAGE).flatMap(([kind, list])=>list.filter(x=>x.at > before && isOpen(x)).map(x=>({ kind, x })));
-  const run = { finished, stars, level:g.id, hits:g.hits, goodSeen:g.goodSeen, goodGot:g.goodGot, got:g.got, turbo:g.turbo, braked:g.braked };
+  const run = { finished, stars, level:g.id, hits:g.hits, goodSeen:g.goodSeen, goodGot:g.goodGot, got:g.got, turbo:g.turbo, brakes:g.brakes };
   const earned = STICKERS.filter(st=>!store.stickers[st.id] && st.test(run, store));
   earned.forEach(st=>store.stickers[st.id] = 1);
   save();

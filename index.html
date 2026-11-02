@@ -199,6 +199,78 @@
   .unlock-item{display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700;}
   .unlock-item .swatch{width:26px; height:26px; cursor:default;}
 
+  /* ---------- Наліпки ---------- */
+  .stickers-box{margin-top:20px; padding-top:16px; border-top:1.5px dashed var(--line);}
+  .stickers{display:grid; grid-template-columns:repeat(auto-fill, minmax(86px, 1fr)); gap:8px; margin-top:10px;}
+  .sticker{display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; cursor:pointer; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:12.5px; line-height:1.15;}
+  .sticker .st-ico{width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:27px;
+    background:radial-gradient(circle at 35% 30%, #FFFFFF, #FFF1C2); border:3px solid #FFC93C; box-shadow:0 3px 0 #E0A800;}
+  .sticker.no{color:var(--ink-soft); font-weight:600;}
+  .sticker.no .st-ico{background:var(--bg); border:2px dashed var(--line); box-shadow:none;}
+  .sticker.no .st-ico span{filter:grayscale(1); opacity:.3;}
+  .sticker.new .st-ico{animation:beat .6s ease 2;}
+
+  /* ---------- Гравці ---------- */
+  .player-btn{margin-left:auto; display:inline-flex; align-items:center; gap:6px; max-width:200px; overflow:hidden;}
+  .player-btn + .top-btn{margin-left:0;}
+  .player-btn .long{overflow:hidden; text-overflow:ellipsis;}
+  /* Автівка лежить на боці, передом праворуч: рамка — під її розміри після повороту */
+  .pb-car{display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:38px; height:24px;}
+  .pb-car svg{display:block; width:24px; height:auto; transform:rotate(90deg);}
+  .overlay{position:fixed; inset:0; z-index:20; background:rgba(27,27,58,.45); display:none; align-items:center; justify-content:center; padding:16px;}
+  .overlay.show{display:flex;}
+  .win{background:var(--surface); border-radius:var(--radius-l); padding:26px 24px; max-width:470px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(27,27,58,.25); max-height:90vh; overflow:auto;}
+  .win h2{font-size:26px; margin-bottom:2px;}
+  .win .sub{color:var(--ink-soft); font-size:14.5px; margin:0;}
+  .win .big{font-size:56px; line-height:1; margin-bottom:6px;}
+  .win.prof h2{font-size:22px;}
+  .name-form{display:flex; gap:8px; margin:14px 0 6px;}
+  .name-form input{flex:1; min-width:0; font:inherit; font-size:16px; padding:9px 14px; border:1.5px solid var(--line); border-radius:999px; outline:none; color:var(--ink);}
+  .name-form input:focus{border-color:var(--teal);}
+  .known{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:14px 0 4px;}
+  .chip-btn{font-family:'Baloo 2',sans-serif; font-weight:600; font-size:14px; border:1.5px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; padding:5px 14px; cursor:pointer;}
+  .chip-btn:hover{border-color:var(--teal);}
+  .note-small{font-size:13px; color:var(--ink-soft); margin:6px 0 0;}
+  .note-small:empty{display:none;}
+  .btn-small{font-size:13.5px; padding:7px 14px;}
+  .players{display:flex; flex-direction:column; gap:6px; margin-top:12px; text-align:left;}
+  .pl-row{display:flex; align-items:center; gap:10px; border:1.5px solid var(--line); border-radius:var(--radius-m); padding:6px 8px 6px 12px; background:var(--surface);}
+  .pl-row.me{border-color:var(--teal); background:#F2FBF7;}
+  .pl-row .pb-car{width:48px; height:30px;}
+  .pl-row .pb-car svg{width:30px;}
+  .pl-name{flex:1; min-width:0; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pl-name small{display:block; font-family:'Nunito Sans',sans-serif; font-weight:600; font-size:12px; color:var(--ink-soft);}
+  .pl-you{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13px; color:var(--teal-dark); padding:0 6px;}
+  .pl-del{width:30px; height:30px; border-radius:50%; border:none; background:none; color:var(--ink-soft); font-size:15px; cursor:pointer;}
+  .pl-del:hover{background:#FFEFE9; color:#C2410C;}
+  .prof-foot{display:flex; justify-content:flex-end; margin-top:14px;}
+
+  /* ---------- Колесо миші: швидкість ---------- */
+  .chip.gear{gap:4px; font-size:16px; padding:3px 10px;}
+  .gbars{display:inline-flex; align-items:flex-end; gap:2px; height:20px;}
+  .gbars i{width:6px; border-radius:2px; background:var(--line);}
+  .gbars i:nth-child(1){height:6px;} .gbars i:nth-child(2){height:9px;} .gbars i:nth-child(3){height:12px;} .gbars i:nth-child(4){height:16px;} .gbars i:nth-child(5){height:20px;}
+  .gbars i.on{background:var(--teal);}
+  .gbars i.on.fast{background:var(--coral);}
+  .chip.gear.bump{animation:beat .3s ease;}
+  .mouse .wh{fill:#fff; transition:fill .12s ease;}
+  .mouse .wh.up{fill:var(--coral);} .mouse .wh.down{fill:var(--teal);}
+  .side small.side-wheel{color:var(--purple); font-weight:700;}
+  .over-card .w{display:block; color:var(--purple); font-size:13px;}
+  /* Планшет і телефон: колеса миші немає */
+  @media (hover:none) and (pointer:coarse){ .chip.gear, .over-card .w, .side small.side-wheel{display:none;} }
+
+  /* Підказка, якщо учень плутає кнопки: велика мишка посеред дороги */
+  .hint{position:absolute; left:50%; top:22%; z-index:4; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none;
+    background:rgba(255,255,255,.94); border-radius:var(--radius-l); padding:12px 16px; box-shadow:0 10px 30px rgba(0,0,0,.3); animation:hint-in .25s ease;}
+  .hint[hidden]{display:none;}
+  .hint .mouse{width:84px;}
+  .hint .mouse .on{animation:flash .5s steps(2) infinite;}
+  .hint-text{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px; line-height:1.3; text-align:center; white-space:nowrap;}
+  .hint-text .l{color:var(--left);} .hint-text .r{color:var(--right);}
+  @keyframes hint-in{from{opacity:0; transform:translateX(-50%) scale(.8);}}
+  @keyframes flash{50%{opacity:.35;}}
+
   /* ---------- Результат ---------- */
   .result{text-align:center; max-width:560px; margin-left:auto; margin-right:auto;}
   .res-emoji{font-size:54px; line-height:1;}
@@ -220,6 +292,7 @@
 <div class="topbar"><div class="topbar-inner">
   <a class="back-link" href="https://cikavo.me/labs/" data-ui>← Лабораторія</a>
   <span class="game-title">Мишачі перегони</span>
+  <button class="top-btn player-btn" id="playerBtn" type="button" title="Гравці на цьому комп'ютері" data-ui><span class="pb-car" id="playerCar"></span><span class="long" id="playerName">Гравець</span></button>
   <a class="top-btn" href="guide/index.html" title="Інструкція для учнів і вчителів" data-ui>❓<span class="long"> Як грати</span></a>
   <button class="top-btn fs-btn" id="fsBtn" type="button" title="На весь екран (F11)" aria-label="На весь екран (F11)" data-ui hidden>
     <svg class="fs-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 10.5L20 4M14 4h6v6M10.5 13.5L4 20M4 14v6h6"/></svg>
@@ -251,6 +324,10 @@
       <div class="g-row"><h4>Автівка</h4><div class="picks" id="modelPicks"></div></div>
       <div class="g-row"><h4>Траса</h4><div class="picks" id="trackPicks"></div></div>
     </div>
+    <div class="stickers-box">
+      <div class="garage-head"><h3>Наліпки</h3><span class="next-goal" id="stickerCount"></span></div>
+      <div class="stickers" id="stickers"></div>
+    </div>
     <div class="teacher-note"></div>
   </section>
 
@@ -260,6 +337,7 @@
       <span class="chip score" title="Бали"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-star"/></svg><span id="score">0</span></span>
       <span class="chip hearts" id="hearts" title="Життя"></span>
       <span class="chip time" id="timeChip" title="Скільки лишилось часу">⏱ <span id="time">1:00</span></span>
+      <span class="chip gear" id="gearChip" title="Швидкість: колесо миші від себе — швидше, до себе — повільніше">🐢<span class="gbars" id="gearBars"><i></i><i></i><i></i><i></i><i></i></span>🚀</span>
       <button class="round-btn" id="pauseBtn" title="Пауза (Пробіл)" data-ui>⏸</button>
       <button class="round-btn exit" id="exitBtn" title="Вийти до вибору рівня" data-ui>✕</button>
     </div>
@@ -273,7 +351,11 @@
           <div class="slow-badge" id="slowBadge" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-clock"/></svg> Повільніше</div>
           <div class="over" id="countOver" hidden>
             <div class="lights" id="lights"><i></i><i></i><i></i></div>
-            <div class="over-card"><span class="l">← ліва кнопка — вліво</span><br><span class="r">права кнопка — вправо →</span></div>
+            <div class="over-card"><span class="l">← ліва кнопка — вліво</span><br><span class="r">права кнопка — вправо →</span><span class="w">колесо від себе — швидше, до себе — повільніше</span></div>
+          </div>
+          <div class="hint" id="hintOver" hidden aria-live="polite">
+            <svg class="mouse" id="hintMouse" viewBox="0 0 100 150" aria-hidden="true"></svg>
+            <div class="hint-text"><span class="l">ліва кнопка — вліво</span><br><span class="r">права кнопка — вправо</span></div>
           </div>
           <div class="over" id="pauseOver" hidden>
             <h2>Пауза</h2>
@@ -284,6 +366,7 @@
       <aside class="side" aria-hidden="true">
         <svg class="mouse" id="sideMouse" viewBox="0 0 100 150"></svg>
         <div class="side-labels"><span class="l">← ліва</span><span class="r">права →</span></div>
+        <small class="side-wheel">колесо ↑ швидше<br>колесо ↓ повільніше</small>
         <small>Пробіл — пауза</small>
       </aside>
     </div>
@@ -306,6 +389,36 @@
     <div class="teacher-note"></div>
   </section>
 </main>
+
+<!-- Вибір гравця -->
+<div class="overlay" id="nameOverlay">
+  <div class="win" role="dialog" aria-labelledby="nameTitle">
+    <div class="big">👋</div>
+    <h2 id="nameTitle">Привіт! Як тебе звати?</h2>
+    <p class="sub">Під цим ім'ям на цьому комп'ютері збережуться твої бали, автівки й наліпки.</p>
+    <div class="known" id="knownPlayers"></div>
+    <form class="name-form" id="nameForm">
+      <input id="nameInput" maxlength="24" placeholder="Ім'я та прізвище" autocomplete="off">
+      <button class="btn btn-primary" type="submit">Почати</button>
+    </form>
+    <p class="note-small" id="nameErr"></p>
+    <button class="btn btn-ghost btn-small" id="nameCancel" type="button" hidden>Скасувати</button>
+  </div>
+</div>
+
+<!-- Гравці на цьому комп'ютері -->
+<div class="overlay" id="profileOverlay">
+  <div class="win prof" role="dialog" aria-labelledby="profTitle">
+    <h2 id="profTitle">Гравці на цьому комп'ютері</h2>
+    <div class="players" id="playerList"></div>
+    <form class="name-form" id="addForm">
+      <input id="addInput" maxlength="24" placeholder="Ім'я нового гравця" autocomplete="off">
+      <button class="btn btn-primary" type="submit">＋ Додати</button>
+    </form>
+    <p class="note-small" id="addErr"></p>
+    <div class="prof-foot"><button class="btn btn-ghost btn-small" id="profClose" type="button">Закрити</button></div>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -386,12 +499,47 @@ const GOOD = {
 const BAD = { cone:'конус', barrier:'бар\'єр', rock:'камінь', oil:'калюжа мастила' };
 const SLOW_TIME = 4;      // скільки секунд діє годинник
 const SAFE_TIME = 1.2;    // після зіткнення автівка блимає й не отримує нових ушкоджень
+// Колесо миші перемикає швидкість: від себе — швидше, до себе — повільніше. Швидше — більше предметів за той самий час
+const GEARS = [.6, .8, 1, 1.25, 1.5];
+const GEAR_NORMAL = 2;
+const HINT_WALLS = 2;     // стільки разів поспіль у край дороги — і з'являється мишка-підказка
+// Наліпки за досягнення. r — підсумок заїзду, p — профіль гравця після заїзду
+const STICKERS = [
+  { id:'first',  ico:'🏁', name:'Перший фініш',     how:'Доїхати до фінішу',                       test:r=>r.finished },
+  { id:'clean',  ico:'🛡️', name:'Без подряпин',     how:'Фініш без жодного зіткнення',             test:r=>r.finished && r.hits === 0 },
+  { id:'stars3', ico:'🌟', name:'Три зірки',        how:'Отримати за заїзд 3 зірки',               test:r=>r.stars === 3 },
+  { id:'gems',   ico:'💎', name:'Скарбошукач',      how:'Зібрати 5 кристалів за заїзд',            test:r=>r.got.gem >= 5 },
+  { id:'clocks', ico:'⏰', name:'Володар часу',     how:'Зібрати 3 годинники за заїзд',            test:r=>r.got.clock >= 3 },
+  { id:'all',    ico:'🧲', name:'Усе зібрано',      how:'Фініш, зібравши все корисне',             test:r=>r.finished && r.goodSeen >= 10 && r.goodGot === r.goodSeen },
+  { id:'turbo',  ico:'🚀', name:'Турбо',            how:'Їхати 10 секунд на найбільшій швидкості', test:r=>r.turbo >= 10 },
+  { id:'brake',  ico:'🐢', name:'Обережний водій',  how:'Колесом миші пригальмувати до найменшої швидкості', test:r=>r.braked },
+  { id:'mid',    ico:'🟡', name:'Упевнений водій',  how:'Фініш на рівні «Середньо»',               test:r=>r.finished && r.level === 'mid' },
+  { id:'hard',   ico:'🔴', name:'Ас',               how:'Фініш на рівні «Важко»',                  test:r=>r.finished && r.level === 'hard' },
+  { id:'races',  ico:'🏆', name:'Справжній гонщик', how:'Проїхати 10 заїздів',                     test:(r, p)=>p.races >= 10 },
+  { id:'bank',   ico:'💰', name:'Повна скарбничка', how:'Зібрати в скарбничку 500 балів',          test:(r, p)=>p.total >= 500 },
+];
 const STORE_KEY = BOOST ? 'mouse-race-kids-boost-v1' : 'mouse-race-kids-v1';
 
 /* ================= Збереження ================= */
-let store = { best:{}, total:0 };   // total — скарбничка балів; color, model, track — вибір у гаражі
-try{ store = Object.assign(store, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); }catch(e){}
-function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }catch(e){} }
+// Гравці на цьому пристрої: { current, players:{ ім'я: профіль } }. У кожного свої рекорди, скарбничка, гараж і наліпки.
+// Профіль: best — рекорди рівнів; total — скарбничка балів; races — заїздів; stickers — наліпки; color, model, track — вибір у гаражі
+const newProfile = ()=>({ best:{}, total:0, races:0, stickers:{} });
+let db = { current:null, players:{} };
+let legacy = null;   // прогрес, збережений до появи гравців, дістається першому гравцю
+try{
+  const s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+  if(s && s.players) db = s;
+  else if(s && (s.total || Object.keys(s.best || {}).length)) legacy = s;
+}catch(e){}
+let player = null;
+let store = newProfile();   // профіль поточного гравця
+function save(){ if(player) try{ localStorage.setItem(STORE_KEY, JSON.stringify(db)); }catch(e){} }
+function loadPlayer(name){
+  if(!db.players[name]){ db.players[name] = legacy || {}; legacy = null; }
+  store = db.players[name] = Object.assign(newProfile(), db.players[name]);
+  player = db.current = name;
+  save();
+}
 
 /* ================= Звук ================= */
 // Звук увімкнено за замовчуванням. Учням перемикача не показуємо: вчитель вимикає звук адресою ?zvuk=tykho
@@ -470,6 +618,7 @@ const fmtTime = s=>`${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(
 // 1 бал, 2 бали, 5 балів
 const plural = (n, [one, few, many])=>{ const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
 const pick = list=>list[Math.floor(Math.random() * list.length)];
+const esc = s=>String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const starsText = n=>'★'.repeat(n) + `<i>${'★'.repeat(3 - n)}</i>`;
 
 let toastTimer = 0;
@@ -501,11 +650,12 @@ const MOUSE_SVG = `
   <path class="bl" d="M48.5 19.6A36.5 36.5 0 0 0 13.5 56V68h35z"/>
   <path class="br" d="M51.5 19.6A36.5 36.5 0 0 1 86.5 56V68h-35z"/>
   <path d="M12 69.5h76M50 18v51.5" stroke="#1B1B3A" stroke-width="3"/>
-  <rect x="45" y="30" width="10" height="20" rx="5" fill="#fff" stroke="#1B1B3A" stroke-width="2.5"/>
+  <rect class="wh" x="45" y="30" width="10" height="20" rx="5" stroke="#1B1B3A" stroke-width="2.5"/>
   <text class="arr" x="29" y="58" text-anchor="middle" fill="#0E7C7A">←</text>
   <text class="arr" x="71" y="58" text-anchor="middle" fill="#C2410C">→</text>`;
 $('introMouse').innerHTML = MOUSE_SVG;
 $('sideMouse').innerHTML = MOUSE_SVG;
+$('hintMouse').innerHTML = MOUSE_SVG;
 
 /* ================= Гараж: колір, автівка, траса ================= */
 // Бали з усіх заїздів складаються в скарбничку (store.total). За неї відкриваються кольори, автівки й траси:
@@ -621,7 +771,106 @@ function renderSetup(){
     </button>`;
   }).join('');
   renderGarage();
+  const got = STICKERS.filter(st=>store.stickers[st.id]).length;
+  $('stickerCount').textContent = `${got} з ${STICKERS.length}`;
+  $('stickers').innerHTML = STICKERS.map(stickerHTML).join('');
 }
+// Наліпка: отримана — кольорова, ще ні — сіра; при наведенні видно, за що її дають
+const stickerHTML = st=>`<span class="sticker${store.stickers[st.id] ? '' : ' no'}" data-st="${st.id}" title="${st.how}"><span class="st-ico"><span>${st.ico}</span></span>${st.name}</span>`;
+// Клацання по наліпці підказує, за що її дають (на планшеті підказки при наведенні немає)
+$('stickers').addEventListener('click', e=>{
+  const st = STICKERS.find(st=>st.id === e.target.closest('[data-st]')?.dataset.st);
+  if(st) showToast(`${st.ico} ${st.how}`);
+});
+
+/* ================= Гравці ================= */
+const nameOverlay = $('nameOverlay'), profileOverlay = $('profileOverlay');
+const miniCar = p=>{
+  const find = (list, id)=>list.find(x=>x.id === id && isOpen(x, p.total)) || list[0];
+  return `<span class="pb-car">${carSVG(find(MODELS, p.model), find(COLORS, p.color))}</span>`;
+};
+function renderPlayerBtn(){
+  $('playerCar').innerHTML = carSVG();
+  $('playerName').textContent = player || 'Гравець';
+}
+// required — без імені грати не можна (перший вхід); інакше вікно можна закрити
+function openNameModal(required){
+  $('nameCancel').hidden = required;
+  const names = Object.keys(db.players).sort((a, b)=>a.localeCompare(b, 'uk'));
+  $('knownPlayers').innerHTML = names.length
+    ? `<span class="note-small" style="width:100%; margin:0">Уже грали на цьому комп'ютері — обери себе:</span>` +
+      names.map(n=>`<button type="button" class="chip-btn" data-n="${esc(n)}">👤 ${esc(n)}</button>`).join('')
+    : '';
+  $('nameInput').value = '';
+  $('nameErr').textContent = '';
+  nameOverlay.classList.add('show');
+  setTimeout(()=>$('nameInput').focus(), 50);
+}
+$('knownPlayers').addEventListener('click', e=>{ const b = e.target.closest('[data-n]'); if(b) enterGame(b.dataset.n); });
+$('nameForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const n = $('nameInput').value.trim().replace(/\s+/g, ' ');
+  if(n.length < 2){ $('nameErr').textContent = 'Введи своє ім\'я (хоча б 2 літери).'; $('nameInput').focus(); return; }
+  enterGame(n);   // таке ім'я вже є — просто продовжуємо його прогрес
+});
+$('nameCancel').addEventListener('click', ()=>nameOverlay.classList.remove('show'));
+function enterGame(name){
+  loadPlayer(name);
+  nameOverlay.classList.remove('show');
+  profileOverlay.classList.remove('show');
+  renderPlayerBtn();
+  toSetup();
+}
+
+function renderProfile(){
+  const names = Object.keys(db.players).sort((a, b)=>a === player ? -1 : b === player ? 1 : a.localeCompare(b, 'uk'));
+  $('playerList').innerHTML = names.map(n=>{
+    const p = db.players[n], me = n === player;
+    const st = Object.keys(p.stickers || {}).length;
+    return `<div class="pl-row${me ? ' me' : ''}">${miniCar(p)}
+      <span class="pl-name">${esc(n)}<small>★ ${p.total || 0} · наліпок ${st} з ${STICKERS.length}</small></span>
+      ${me ? '<span class="pl-you">це ти</span>' : `<button type="button" class="btn btn-primary btn-small" data-play="${esc(n)}">Грати</button>`}
+      <button type="button" class="pl-del" data-del="${esc(n)}" title="Видалити гравця">✕</button>
+    </div>`;
+  }).join('');
+  $('addInput').value = '';
+  $('addErr').textContent = '';
+}
+function openProfile(){
+  if(!player){ openNameModal(true); return; }
+  if(G) toSetup();
+  renderProfile();
+  profileOverlay.classList.add('show');
+}
+function deletePlayer(name){
+  if(!confirm(`Видалити гравця «${name}» з цього комп'ютера разом із балами й наліпками?`)) return;
+  delete db.players[name];
+  if(name !== player){ save(); renderProfile(); return; }
+  // Видалили себе: переходимо до іншого гравця або просимо ім'я
+  const other = Object.keys(db.players)[0];
+  if(other){ enterGame(other); return; }
+  db.current = null;
+  save();
+  player = null;
+  store = newProfile();
+  renderPlayerBtn();
+  profileOverlay.classList.remove('show');
+  toSetup();
+  openNameModal(true);
+}
+$('playerList').addEventListener('click', e=>{
+  const play = e.target.closest('[data-play]'), del = e.target.closest('[data-del]');
+  if(play) enterGame(play.dataset.play);
+  if(del) deletePlayer(del.dataset.del);
+});
+$('addForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const n = $('addInput').value.trim().replace(/\s+/g, ' ');
+  if(n.length < 2){ $('addErr').textContent = 'Введи ім\'я (хоча б 2 літери).'; return; }
+  enterGame(n);   // такий гравець уже є — просто перемикаємося на нього
+});
+$('playerBtn').addEventListener('click', openProfile);
+$('profClose').addEventListener('click', ()=>profileOverlay.classList.remove('show'));
 $('levels').addEventListener('click', e=>{
   const b = e.target.closest('[data-level]');
   if(b) start(b.dataset.level);
@@ -686,7 +935,8 @@ function start(levelId){
   lastLevel = levelId;
   const L = LEVELS[levelId];
   G = { id:levelId, L, lane:Math.floor((L.lanes - 1) / 2), lives:L.lives, score:0, items:[], prevBad:[], t:0, dist:0, spawn:.6,
-        slow:0, safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0, phase:'count', paused:false, raf:0, last:0, timers:[] };
+        slow:0, safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0,
+        gear:GEAR_NORMAL, turbo:0, braked:false, wallRun:0, hints:0, got:{ star:0, gem:0, clock:0, heart:0 }, phase:'count', paused:false, raf:0, last:0, timers:[] };
   field.style.setProperty('--field-w', (L.lanes * 125 + 42) + 'px');
   road.querySelectorAll('.sep, .item, .pop').forEach(n=>n.remove());
   for(let i = 1; i < L.lanes; i++){
@@ -697,6 +947,8 @@ function start(levelId){
   carEl.className = 'car';
   carEl.style.left = laneLeft(G.lane);
   road.classList.remove('slow', 'hurt');
+  $('hintOver').hidden = true;
+  renderGear();
   $('slowBadge').hidden = true;
   $('pauseOver').hidden = true;
   renderHearts();
@@ -749,7 +1001,8 @@ function step(dt){
   if(G.slow > 0){ G.slow -= dt; if(G.slow <= 0){ road.classList.remove('slow'); $('slowBadge').hidden = true; } }
   if(G.safe > 0){ G.safe -= dt; if(G.safe <= 0) carEl.classList.remove('safe'); }
   const fall = L.fall[0] + (L.fall[1] - L.fall[0]) * (G.t / L.time);   // гра поступово пришвидшується
-  const adv = dt * (G.slow > 0 ? .5 : 1);
+  if(G.gear === GEARS.length - 1) G.turbo += dt;
+  const adv = dt * (G.slow > 0 ? .5 : 1) * GEARS[G.gear];
   G.dist += adv / fall;
   road.style.setProperty('--off', `${(G.dist * (H + SZ)) % 60}px`);
 
@@ -852,6 +1105,7 @@ function touch(it){
   }
   const g = GOOD[it.type];
   G.goodSeen++; G.goodGot++;
+  G.got[it.type]++;
   it.passed = true;
   if(g.pts){ G.score += g.pts; bumpScore(); popText('+' + g.pts, it); }
   if(it.type === 'heart'){ G.lives = Math.min(G.L.lives, G.lives + 1); renderHearts(true); popText('+1 ❤', it); }
@@ -888,13 +1142,48 @@ function move(dir){
   if(lane < 0 || lane >= G.L.lanes){
     G.walls++;
     SFX.wall();
+    if(++G.wallRun >= HINT_WALLS) showHint(-dir);
     const c = dir < 0 ? 'bump-l' : 'bump-r';
     carEl.classList.remove('bump-l', 'bump-r'); void carEl.offsetWidth; carEl.classList.add(c);
     return;
   }
+  G.wallRun = 0;
   G.lane = lane;
   carEl.style.left = laneLeft(lane);
   SFX.move();
+}
+// Учень кілька разів поспіль тисне в бік краю дороги — мабуть, плутає кнопки.
+// Посеред дороги на мить з'являється велика мишка, на якій блимає кнопка, що веде в інший бік
+function showHint(dir){
+  G.wallRun = 0;
+  G.hints++;
+  const h = $('hintOver');
+  h.querySelectorAll('.bl, .br').forEach(b=>b.classList.remove('on'));
+  h.querySelector(dir < 0 ? '.bl' : '.br').classList.add('on');
+  h.hidden = false;
+  clearTimeout(h._t);
+  h._t = setTimeout(()=>h.hidden = true, 2200);
+}
+
+// Колесо миші: від себе (вгору) — швидше, до себе (вниз) — повільніше
+function shiftGear(dir){
+  if(!G || G.paused || G.phase !== 'play') return;
+  const gear = Math.max(0, Math.min(GEARS.length - 1, G.gear + dir));
+  const w = $('sideMouse').querySelector('.wh');
+  w.classList.remove('up', 'down'); w.classList.add(dir > 0 ? 'up' : 'down');
+  clearTimeout(w._t);
+  w._t = setTimeout(()=>w.classList.remove('up', 'down'), 200);
+  if(gear === G.gear){ SFX.wall(); return; }
+  G.gear = gear;
+  if(gear === 0) G.braked = true;
+  tone(400 + gear * 120, .08, 'triangle', .05);   // що швидше, то вищий звук
+  renderGear(true);
+}
+function renderGear(bump){
+  const n = G ? G.gear : GEAR_NORMAL;
+  $('gearBars').querySelectorAll('i').forEach((b, i)=>{ b.classList.toggle('on', i <= n); b.classList.toggle('fast', i <= n && n > GEAR_NORMAL); });
+  const c = $('gearChip');
+  if(bump){ c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
 }
 function flashMouse(dir){
   const b = $('sideMouse').querySelector(dir < 0 ? '.bl' : '.br');
@@ -938,8 +1227,12 @@ function finish(finished){
   // Усі зібрані бали йдуть у скарбничку, навіть якщо життя скінчились
   const before = store.total;
   store.total += g.score;
-  save();
+  store.races++;
   const opened = Object.entries(GARAGE).flatMap(([kind, list])=>list.filter(x=>x.at > before && isOpen(x)).map(x=>({ kind, x })));
+  const run = { finished, stars, level:g.id, hits:g.hits, goodSeen:g.goodSeen, goodGot:g.goodGot, got:g.got, turbo:g.turbo, braked:g.braked };
+  const earned = STICKERS.filter(st=>!store.stickers[st.id] && st.test(run, store));
+  earned.forEach(st=>store.stickers[st.id] = 1);
+  save();
 
   $('resEmoji').textContent = finished ? '🏁' : '💔';
   $('resTitle').textContent = finished ? (stars === 3 ? 'Чудово! Фініш!' : 'Фініш!') : 'Життя скінчились';
@@ -952,12 +1245,14 @@ function finish(finished){
     ['Зібрано корисного', `${g.goodGot} з ${g.goodSeen}`],
     ['Зіткнень', g.hits],
     ['Клацань', `<span><span class="l">лівою ${g.clicks[0]}</span> · <span class="r">правою ${g.clicks[1]}</span></span>`],
+    g.hints && ['Підказка з мишкою', `${g.hints} ${plural(g.hints, ['раз', 'рази', 'разів'])}`],
     ['У скарбничці', `★ ${store.total}`],
-  ].map(([k, v])=>`<li><span>${k}</span><b>${v}</b></li>`).join('');
+  ].filter(Boolean).map(([k, v])=>`<li><span>${k}</span><b>${v}</b></li>`).join('');
   $('resUnlock').innerHTML = opened.length ? `<div class="unlock"><b>🔓 Відкрито в гаражі!</b><div class="unlock-list">${opened.map(({ kind, x })=>
     `<span class="unlock-item">${kind === 'color' ? `<span class="swatch" style="background:${x.fill}"></span>`
       : kind === 'model' ? `<span class="car-thumb">${carSVG(x)}</span>` : trackPrev(x)}${KIND_NAME[kind]}: ${kind === 'track' ? x.ico + ' ' : ''}${x.name}</span>`).join('')}</div></div>` : '';
-  if(opened.length) sparkle(1.2);
+  $('resUnlock').innerHTML += earned.length ? `<div class="unlock"><b>🎉 ${earned.length > 1 ? 'Нові наліпки' : 'Нова наліпка'}!</b><div class="unlock-list">${earned.map(stickerHTML).join('')}</div></div>` : '';
+  if(opened.length || earned.length) sparkle(1.2);
 
   if(finished){
     if(stars === 3 || record){ popper(); bigFanfare(.1); confetti(stars === 3 ? 160 : 90); }
@@ -979,6 +1274,17 @@ document.addEventListener('mousedown', e=>{
 });
 // Під час гри контекстне меню правої кнопки не з'являється
 document.addEventListener('contextmenu', e=>{ if(!$('game').hidden) e.preventDefault(); });
+// Колесо: одна клацанка коліщатка — одна швидкість. Тачпад дає багато дрібних кроків — їх накопичуємо
+let wheelAcc = 0, wheelAt = 0;
+document.addEventListener('wheel', e=>{
+  if($('game').hidden) return;
+  e.preventDefault();   // сторінка під час гри не прокручується
+  wheelAcc += e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
+  const now = performance.now();
+  if(Math.abs(wheelAcc) < 50 || now - wheelAt < 120) return;
+  shiftGear(wheelAcc < 0 ? 1 : -1);
+  wheelAcc = 0; wheelAt = now;
+}, { passive:false });
 // Планшет: дотик ліворуч від автівки — вліво, праворуч — вправо
 road.addEventListener('pointerdown', e=>{
   if(e.pointerType === 'mouse' || e.target.closest('[data-ui]')) return;
@@ -1039,7 +1345,11 @@ updateFsBtn();
   }
 }
 updateTeacherNote();
+// Хто грав останнім на цьому комп'ютері — продовжує; інакше спершу питаємо ім'я
+if(db.current && db.players[db.current]) loadPlayer(db.current);
+renderPlayerBtn();
 renderSetup();
+if(!player) openNameModal(true);
 // Офлайн: обробник sw.js зберігає гру в браузері, щоб вона відкривалась без інтернету.
 // Працює лише на сайті (http/https); з папки (file://) гра й так відкривається без мережі
 if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});

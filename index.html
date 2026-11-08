@@ -332,7 +332,7 @@
       <span class="chip score" title="Бали"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-star"/></svg><span id="score">0</span></span>
       <span class="chip hearts" id="hearts" title="Життя"></span>
       <span class="chip time" id="timeChip" title="Скільки лишилось часу">⏱ <span id="time">1:00</span></span>
-      <span class="chip gear" id="gearChip" title="Швидкість: колесо миші від себе — швидше, до себе — повільніше">🐢<span class="gbars" id="gearBars"><i></i><i></i><i></i><i></i><i></i></span>🚀</span>
+      <span class="chip gear" id="gearChip" title="Швидкість: колесо миші від себе — швидше, до себе — повільніше">🐢<span class="gbars" id="gearBars"><i></i><i></i><i></i><i></i><i></i></span>⚡</span>
       <button class="round-btn" id="pauseBtn" title="Пауза (Пробіл)" data-ui>⏸</button>
       <button class="round-btn exit" id="exitBtn" title="Вийти до вибору рівня" data-ui>✕</button>
     </div>
@@ -503,7 +503,7 @@ const STICKERS = [
   { id:'gems',   ico:'💎', name:'Скарбошукач',      how:'Зібрати 8 кристалів за заїзд',                        test:r=>r.got.gem >= 8 },
   { id:'fuel',   ico:'⛽', name:'Повний бак',       how:'Зібрати 7 каністр пального за заїзд',                 test:r=>r.got.fuel >= 7 },
   { id:'all',    ico:'🧲', name:'Усе зібрано',      how:'Фініш, зібравши все корисне — щонайменше 30 предметів', test:r=>r.finished && r.goodSeen >= 30 && r.goodGot === r.goodSeen },
-  { id:'turbo',  ico:'🚀', name:'Турбо',            how:'Проїхати 30 секунд на найбільшій швидкості',           test:r=>r.turbo >= 30 },
+  { id:'turbo',  ico:'⚡', name:'Турбо',            how:'Проїхати 30 секунд на найбільшій швидкості',           test:r=>r.turbo >= 30 },
   { id:'brake',  ico:'🐢', name:'Обережний водій',  how:'5 разів за заїзд пригальмувати колесом до найменшої швидкості', test:r=>r.brakes >= 5 },
   { id:'mid',    ico:'🟡', name:'Упевнений водій',  how:'Фініш на «Середньо» з двома зірками чи більше',       test:r=>r.finished && r.level === 'mid' && r.stars >= 2 },
   { id:'hard',   ico:'🔴', name:'Ас',               how:'Фініш на рівні «Важко»',                              test:r=>r.finished && r.level === 'hard' },

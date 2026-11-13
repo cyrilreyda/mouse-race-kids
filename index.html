@@ -813,6 +813,15 @@ $('stickers').addEventListener('click', e=>{
   const st = STICKERS.find(st=>st.id === e.target.closest('[data-st]')?.dataset.st);
   if(st) showToast(`${st.ico} ${st.how}`);
 });
+// Нова наліпка на екрані результату веде на головну сторінку до наліпок і підсвічує її там
+$('resUnlock').addEventListener('click', e=>{
+  const id = e.target.closest('[data-st]')?.dataset.st;
+  if(!id) return;
+  toSetup();
+  $('stickers').closest('.stickers-box').scrollIntoView({ behavior:'smooth', block:'center' });
+  const el = $('stickers').querySelector(`[data-st="${id}"]`);
+  setTimeout(()=>el.classList.add('new'), 500);   // після прокрутки
+});
 
 /* ================= Гравці ================= */
 const nameOverlay = $('nameOverlay'), profileOverlay = $('profileOverlay');

@@ -246,8 +246,7 @@
   /* ---------- Колесо миші: швидкість ---------- */
   .chip.gear{gap:4px; font-size:16px; padding:3px 10px;}
   .gbars{display:inline-flex; align-items:flex-end; gap:2px; height:20px;}
-  .gbars i{width:6px; border-radius:2px; background:var(--line);}
-  .gbars i:nth-child(1){height:6px;} .gbars i:nth-child(2){height:9px;} .gbars i:nth-child(3){height:12px;} .gbars i:nth-child(4){height:16px;} .gbars i:nth-child(5){height:20px;}
+  .gbars i{width:6px; border-radius:2px; background:var(--line);}   /* висоту кожному стовпчику задає start() */
   .gbars i.on{background:var(--teal);}
   .gbars i.on.fast{background:var(--coral);}
   .chip.gear.bump{animation:beat .3s ease;}
@@ -475,11 +474,14 @@ const BOOST = new URLSearchParams(location.search).has('boost');
 // lanes — смуги; lives — життя; time — тривалість, с; fall — за скільки секунд предмет пролітає дорогу
 // (на початку й наприкінці заїзду, тобто гра поступово пришвидшується); every — пауза між рядами предметів, с;
 // gap — щонайменше стільки секунд біля автівки немає жодного предмета між двома рядами, щоб устигнути змінити смугу;
-// bad — частка перешкод; pair — імовірність, що в ряду два предмети
+// bad — частка перешкод; pair — імовірність, що в ряду два предмети; gears — власні ступені швидкості замість GEARS
+// «Важко» з ?boost: ще два ступені для спритних. На 2,2 наприкінці заїзду ряд доходить до автівки за ~0,4 с
+// від появи (вибір смуги й клацання) і після нього ~0,16 с порожньо — межа для найспритніших у 6–7 класах
 const LEVELS = BOOST ? {
   easy:  { name:'Легко',    ico:'🟢', lanes:3, lives:4, time:60,  fall:[2.8, 2.1], every:.9,  gap:.6,  bad:.4,  pair:.15 },
   mid:   { name:'Середньо', ico:'🟡', lanes:4, lives:3, time:90,  fall:[2.2, 1.6], every:.7,  gap:.45, bad:.45, pair:.3 },
-  hard:  { name:'Важко',    ico:'🔴', lanes:5, lives:3, time:120, fall:[1.7, 1.2], every:.55, gap:.35, bad:.5,  pair:.4 },
+  hard:  { name:'Важко',    ico:'🔴', lanes:5, lives:3, time:120, fall:[1.7, 1.2], every:.55, gap:.35, bad:.5,  pair:.4,
+           gears:[.6, .8, 1, 1.25, 1.5, 1.8, 2.2] },
 } : {
   easy:  { name:'Легко',    ico:'🟢', lanes:3, lives:5, time:60,  fall:[4.2, 3.4], every:1.3,  gap:.9,  bad:.3,  pair:0 },
   mid:   { name:'Середньо', ico:'🟡', lanes:3, lives:4, time:90,  fall:[3.2, 2.4], every:1,    gap:.7,  bad:.4,  pair:.15 },
@@ -931,7 +933,7 @@ function start(levelId){
   const L = LEVELS[levelId];
   G = { id:levelId, L, lane:Math.floor((L.lanes - 1) / 2), lives:L.lives, score:0, items:[], prevBad:[], t:0, dist:0, spawn:.6,
         safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0,
-        gear:GEAR_NORMAL, turbo:0, brakes:0, wallRun:0, hints:0, got:{ star:0, gem:0, fuel:0, heart:0 }, phase:'count', paused:false, raf:0, last:0, timers:[] };
+        gears:L.gears || GEARS, gear:GEAR_NORMAL, turbo:0, brakes:0, wallRun:0, hints:0, got:{ star:0, gem:0, fuel:0, heart:0 }, phase:'count', paused:false, raf:0, last:0, timers:[] };
   field.style.setProperty('--field-w', (L.lanes * 125 + 42) + 'px');
   road.querySelectorAll('.sep, .item, .pop').forEach(n=>n.remove());
   for(let i = 1; i < L.lanes; i++){
@@ -943,6 +945,8 @@ function start(levelId){
   carEl.style.left = laneLeft(G.lane);
   road.classList.remove('hurt');
   $('hintOver').hidden = true;
+  const nGears = G.gears.length;   // стовпчик на кожен ступінь, від 6 до 20 px заввишки
+  $('gearBars').innerHTML = G.gears.map((_, i)=>`<i style="height:${Math.round(6 + 14 * i / (nGears - 1))}px"></i>`).join('');
   renderGear();
   $('pauseOver').hidden = true;
   renderHearts();
@@ -994,8 +998,8 @@ function step(dt){
 
   if(G.safe > 0){ G.safe -= dt; if(G.safe <= 0) carEl.classList.remove('safe'); }
   const fall = L.fall[0] + (L.fall[1] - L.fall[0]) * (G.t / L.time);   // гра поступово пришвидшується
-  if(G.gear === GEARS.length - 1) G.turbo += dt;
-  const adv = dt * GEARS[G.gear];
+  if(G.gear === G.gears.length - 1) G.turbo += dt;
+  const adv = dt * G.gears[G.gear];
   G.dist += adv / fall;
   road.style.setProperty('--off', `${(G.dist * (H + SZ)) % 60}px`);
 
@@ -1160,7 +1164,7 @@ function showHint(dir){
 // Колесо миші: від себе (вгору) — швидше, до себе (вниз) — повільніше
 function shiftGear(dir){
   if(!G || G.paused || G.phase !== 'play') return;
-  const gear = Math.max(0, Math.min(GEARS.length - 1, G.gear + dir));
+  const gear = Math.max(0, Math.min(G.gears.length - 1, G.gear + dir));
   const w = $('sideMouse').querySelector('.wh');
   w.classList.remove('up', 'down'); w.classList.add(dir > 0 ? 'up' : 'down');
   clearTimeout(w._t);

@@ -282,11 +282,18 @@
     background:repeating-linear-gradient(170deg, transparent 0 14px, rgba(255,255,255,.35) 14px 17px, transparent 17px 30px), linear-gradient(to bottom, #4FA8E0, #2B7FC2);
     background-size:60px 100%, 100% 100%; animation:flow 1.2s linear infinite;}
   @keyframes flow{to{background-position:60px 0, 0 0;}}
-  /* Міст з буфера: дерев'яний настил або кам'яний брід на всю ширину */
+  /* Міст з буфера на всю ширину: дерев'яний настил або кам'яні блоки, покладені зі зсувом рядів, як бруківка */
   .wall.river.bridged::after{content:''; position:absolute; inset:-7px 0; animation:pasted .3s ease;}
   .wall.river.by-log::after{background:repeating-linear-gradient(90deg, #A86B3C 0 15px, #6B3E1E 15px 18px);
     box-shadow:inset 0 6px 0 #5C361B, inset 0 -6px 0 #5C361B;}
-  .wall.river.by-rocks::after{background:radial-gradient(circle, #B4B1C8 0 45%, #6E6A88 47% 55%, transparent 57%) 0 0 / 30px 50%;}
+  .wall.river.by-rocks::after{
+    background:
+      linear-gradient(90deg, #5E5A78 0 3px, transparent 3px) 0 0 / 40px 50% repeat-x,                        /* шви верхнього ряду */
+      linear-gradient(90deg, #5E5A78 0 3px, transparent 3px) 20px 100% / 40px 50% repeat-x,                  /* нижнього, зі зсувом */
+      linear-gradient(transparent calc(50% - 1.5px), #5E5A78 calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px)),
+      linear-gradient(rgba(255,255,255,.3) 0 3px, transparent 3px) 0 0 / 100% 50%,                           /* світлий край кожного блока */
+      linear-gradient(to bottom, #B3B0C6, #8F8BA8);
+    box-shadow:inset 0 5px 0 #5E5A78, inset 0 -5px 0 #5E5A78;}
   @keyframes pasted{from{opacity:0; scale:1.2 .4;}}
   .wall.river.bridged, .mini .wall.river.bridged{z-index:1;}   /* автівка їде по мосту, а не під ним */
   .chip.clip{gap:4px; padding:3px 10px;}
@@ -1004,7 +1011,7 @@ function openHardIntro(){
     frame('log', `<div class="wall river" style="transform:translateY(22px)"></div>${hint('🌉 Встав міст:<br>' + keys('V'))}`,
       `3. Річка з'являється, лише коли в буфері щось є. Натисни ${keys('V')}.`),
     frame('log', `<div class="wall river bridged by-log" style="transform:translateY(98px)"></div><div class="wall river bridged by-rocks" style="transform:translateY(28px)"></div>`,
-      '4. Зі стовбура вийде міст, з каміння — брід. Не встиг — заїзд закінчиться.'),
+      '4. Зі стовбура вийде дерев\'яний міст, з каміння — кам\'яний. Не встиг — заїзд закінчиться.'),
   ].join('');
   $('hardOverlay').classList.add('show');
 }
@@ -1329,7 +1336,7 @@ function pasteBridge(){
   // Річка з мостом далі їде дорогою як звичайний предмет, але ні на що не впливає
   G.items.push(Object.assign(w, { lane:-1, bad:true, passed:true }));
   SFX.paste();
-  blockPop(G.clip === 'log' ? '🌉 Міст!' : '🌉 Брід!', w);
+  blockPop('🌉 Міст!', w);
 }
 function blockPop(text, w){
   const p = document.createElement('div');

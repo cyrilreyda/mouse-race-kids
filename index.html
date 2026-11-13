@@ -525,10 +525,11 @@ const GEARS = [.6, .8, 1, 1.25, 1.5];
 const GEAR_NORMAL = 2;
 // Завал на «Важко» (blocks у LEVELS — щонайбільше стільки за заїзд, щонайменше один): стовбур або каміння на всю дорогу.
 // Прибрати — Ctrl + X, не встиг до зіткнення — кінець заїзду. Поки завал на дорозі, нових предметів немає,
-// а дорога за пів секунди сповільнюється до WALL_FALL с на проїзд: на швидкості 1 завал доходить до автівки за ~3 с,
-// а якщо пригальмувати колесом до найменшої — за ~4,5 с. Підказка «Ctrl + X» — коли пригальмували до найменшої
+// а дорога за WALL_RAMP с сповільнюється до WALL_FALL с на проїзд: на швидкості 1 завал доходить до автівки за ~3,5 с,
+// а якщо пригальмувати колесом до найменшої — за ~5,5 с. Підказка «Ctrl + X» — коли пригальмували до найменшої
 // або завал проїхав WALL_HINT_P дороги. На планшеті клавіатури й колеса немає, тож там завалів немає
-const WALL_FALL = 4;
+const WALL_FALL = 5;
+const WALL_RAMP = .25;
 const WALL_HINT_P = .3;
 const NO_WHEEL = matchMedia('(hover:none) and (pointer:coarse)').matches;
 const HINT_WALLS = 2;     // стільки разів поспіль у край дороги — і з'являється мишка-підказка
@@ -1051,7 +1052,7 @@ function step(dt){
 
   if(G.safe > 0){ G.safe -= dt; if(G.safe <= 0) carEl.classList.remove('safe'); }
   let fall = L.fall[0] + (L.fall[1] - L.fall[0]) * (G.t / L.time);   // гра поступово пришвидшується
-  if(G.wall){ G.wall.age += dt; fall += (WALL_FALL - fall) * Math.min(1, G.wall.age / .5); }   // перед завалом дорога сповільнюється
+  if(G.wall){ G.wall.age += dt; fall += (WALL_FALL - fall) * Math.min(1, G.wall.age / WALL_RAMP); }   // перед завалом дорога сповільнюється
   if(G.gear === G.gears.length - 1) G.turbo += dt;
   const adv = dt * G.gears[G.gear];
   G.dist += adv / fall;

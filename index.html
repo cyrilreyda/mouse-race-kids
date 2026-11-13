@@ -277,6 +277,46 @@
   .wall.rocks svg{flex:0 0 auto; width:var(--sz); height:var(--sz); margin:0 calc(var(--sz) * -.12); filter:drop-shadow(0 4px 2px rgba(0,0,0,.3));}
   .wall.rocks svg:nth-child(odd){scale:.85; translate:0 8%;}
   .wall.cut{transition:opacity .35s ease, scale .35s ease; opacity:0; scale:1.1 .2;}
+  /* Річка ширша за предмет: малюнок виступає вгору, а нижній край — там само, де в предмета, щоб зіткнення рахувалось однаково */
+  .wall.river{top:calc(var(--sz) * -.5); height:calc(var(--sz) * 1.5); left:-5px; right:-5px; border-top:5px solid #E9D3A1; border-bottom:5px solid #E9D3A1;
+    background:repeating-linear-gradient(170deg, transparent 0 14px, rgba(255,255,255,.35) 14px 17px, transparent 17px 30px), linear-gradient(to bottom, #4FA8E0, #2B7FC2);
+    background-size:60px 100%, 100% 100%; animation:flow 1.2s linear infinite;}
+  @keyframes flow{to{background-position:60px 0, 0 0;}}
+  /* Міст з буфера: дерев'яний настил або кам'яний брід на всю ширину */
+  .wall.river.bridged::after{content:''; position:absolute; inset:-7px 0; animation:pasted .3s ease;}
+  .wall.river.by-log::after{background:repeating-linear-gradient(90deg, #A86B3C 0 15px, #6B3E1E 15px 18px);
+    box-shadow:inset 0 6px 0 #5C361B, inset 0 -6px 0 #5C361B;}
+  .wall.river.by-rocks::after{background:radial-gradient(circle, #B4B1C8 0 45%, #6E6A88 47% 55%, transparent 57%) 0 0 / 30px 50%;}
+  @keyframes pasted{from{opacity:0; scale:1.2 .4;}}
+  .wall.river.bridged, .mini .wall.river.bridged{z-index:1;}   /* автівка їде по мосту, а не під ним */
+  .chip.clip{gap:4px; padding:3px 10px;}
+  .chip.clip .clip-item{display:inline-flex; align-items:center; min-width:24px;}
+  .chip.clip .clip-item svg{width:24px; height:24px;}
+  .chip.clip small{font-size:12px; font-weight:600; color:var(--ink-soft);}
+  .chip.clip.bump{animation:beat .3s ease;}
+
+  /* Вікно про Ctrl + X і Ctrl + V: кадри з гри */
+  .win.hard-intro{max-width:580px;}
+  .win.hard-intro h2{font-size:21px; line-height:1.35;}
+  .win.hard-intro .nb{white-space:nowrap;}
+  .win.hard-intro kbd, .frame kbd{display:inline-block; padding:0 6px; border:1.5px solid var(--ink); border-bottom-width:3px; border-radius:6px; background:#fff;
+    font-family:'Baloo 2',sans-serif; font-weight:800; font-size:.9em; line-height:1.25;}
+  .frames{display:grid; grid-template-columns:repeat(2, 1fr); gap:14px 16px; margin:16px 0 18px; text-align:left;}
+  @media (max-width:520px){ .frames{grid-template-columns:1fr;} }
+  .frame{margin:0; display:flex; flex-direction:column; gap:6px;}
+  .frame-chip{display:flex; justify-content:center;}
+  .mini-side{background:var(--side); padding:0 12px; border-radius:var(--radius-m);}
+  .mini{position:relative; height:150px; overflow:hidden; isolation:isolate; background:var(--road); border-left:4px solid var(--edge); border-right:4px solid var(--edge); --sz:30px;}
+  .mini .wall{z-index:3;}
+  .mini .hint{top:auto; bottom:52px; padding:5px 10px; border-radius:12px; animation:none;}
+  .mini .hint-text{font-size:13px;}
+  .mini .wall-hint .w{font-size:12px;}
+  .mini .wall-hint kbd{font-size:13px; padding:0 5px; border-width:1.5px; border-bottom-width:3px;}
+  .mini-car{position:absolute; left:50%; bottom:8px; width:22px; margin-left:-11px; z-index:2;}
+  .mini-car svg{display:block; width:100%; height:auto; filter:drop-shadow(0 3px 2px rgba(0,0,0,.3));}
+  .mini-label{position:absolute; left:50%; top:22px; transform:translateX(-50%); z-index:3; white-space:nowrap;
+    font-family:'Baloo 2',sans-serif; font-weight:800; font-size:16px; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.35);}
+  .frame figcaption{font-size:13.5px; line-height:1.4;}
   .wall-hint{top:38%; z-index:3;}
   .wall-hint .hint-text{font-size:19px;}
   .wall-hint .w{color:var(--purple); font-size:15px;}
@@ -351,6 +391,7 @@
       <span class="chip hearts" id="hearts" title="Життя"></span>
       <span class="chip time" id="timeChip" title="Скільки лишилось часу">⏱ <span id="time">1:00</span></span>
       <span class="chip gear" id="gearChip" title="Швидкість: колесо миші від себе — швидше, до себе — повільніше">🐢<span class="gbars" id="gearBars"><i></i><i></i><i></i><i></i><i></i></span>⚡</span>
+      <span class="chip clip" id="clipChip" title="Буфер обміну: що вирізано через Ctrl + X, вставляється через Ctrl + V" hidden>📋 <span class="clip-item" id="clipItem"></span></span>
       <button class="round-btn" id="pauseBtn" title="Пауза (Пробіл)" data-ui>⏸</button>
       <button class="round-btn exit" id="exitBtn" title="Вийти до вибору рівня" data-ui>✕</button>
     </div>
@@ -433,6 +474,17 @@
   </div>
 </div>
 
+<!-- Перший вибір «Важко» за сесію: Ctrl + X і Ctrl + V -->
+<div class="overlay" id="hardOverlay">
+  <div class="win prof hard-intro" role="dialog" aria-labelledby="hardTitle">
+    <button class="prof-close" id="hardClose" type="button" title="Закрити вікно" aria-label="Закрити вікно">✕</button>
+    <h2 id="hardTitle">На «Важко» знадобляться <span class="nb"><kbd>Ctrl</kbd> + <kbd>X</kbd></span> і <span class="nb"><kbd>Ctrl</kbd> + <kbd>V</kbd></span></h2>
+    <p class="sub">Вирізати й вставити — як у будь-якій програмі на комп'ютері.</p>
+    <div class="frames" id="hardFrames"></div>
+    <button class="btn btn-primary btn-big" id="hardGo" type="button">Зрозуміло, поїхали!</button>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- Малюнки предметів: кожен підключається через <use href="#i-…"> -->
@@ -474,6 +526,12 @@
       <path d="M5 35c-2-9 3-16 9.5-19.5C19 7.5 30 6 35.5 13c6.5 3 9 12 6.5 20-1.5 5-6.5 8-12 8H13c-4 0-7-2.5-8-6z" fill="#9A97B0" stroke="#6E6A88" stroke-width="2.5" stroke-linejoin="round"/>
       <path d="M17 20c3-4 8-6 12-4M30 31l5-4M14 31l4 2" fill="none" stroke="#6E6A88" stroke-width="2" stroke-linecap="round"/>
       <path d="M20 14.5c2.5-2 6-3 9-2" fill="none" stroke="#C9C7D9" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-log" viewBox="0 0 48 48">
+      <rect x="3" y="15" width="38" height="18" rx="9" fill="#8B5A2E" stroke="#5C361B" stroke-width="2"/>
+      <path d="M10 20h10M16 28h12M26 21h7" stroke="#5C361B" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="39" cy="24" rx="6" ry="9" fill="#E8C39E" stroke="#5C361B" stroke-width="2"/>
+      <ellipse cx="39" cy="24" rx="2.5" ry="4" fill="none" stroke="#B5835A" stroke-width="1.5"/>
     </symbol>
     <symbol id="i-oil" viewBox="0 0 48 48">
       <path d="M7 29c-4-6.5 2-12.5 9.5-11 3-6.5 13.5-7.5 17.5-1 7.5 0 11.5 6.5 7.5 11.5 3 5.5-3 10.5-9.5 8.5-4.5 4.5-13.5 4.5-17 0-6.5 1-11.5-3.5-8-8z" fill="#2B2B45" stroke="#14142A" stroke-width="2" stroke-linejoin="round"/>
@@ -641,6 +699,7 @@ const SFX = {
   go:    ()=>tone(880, .35, 'square', .05),
   alarm: ()=>[0, .22, .44].forEach(d=>tone(740, .14, 'square', .05, d)),
   cut:   ()=>{ noise(.12, .3, 0, 5000); noise(.12, .3, .13, 5000); tone(1200, .15, 'triangle', .05, .2); },
+  paste: ()=>{ noise(.08, .35, 0, 400); [523, 659, 784].forEach((f, i)=>tone(f, .12, 'triangle', .06, .06 + i * .08)); },
 };
 
 /* ================= Допоміжне ================= */
@@ -914,8 +973,47 @@ $('playerBtn').addEventListener('click', openProfile);
 $('profClose').addEventListener('click', ()=>profileOverlay.classList.remove('show'));
 $('levels').addEventListener('click', e=>{
   const b = e.target.closest('[data-level]');
-  if(b) start(b.dataset.level);
+  if(!b) return;
+  if(wantHardIntro(b.dataset.level)) openHardIntro();
+  else start(b.dataset.level);
 });
+
+// Перший вибір «Важко» за сесію (вкладка чи запуск програми): вікно про Ctrl + X і Ctrl + V з кадрами гри.
+// На планшеті завалів і річок немає — і вікна теж
+const HARD_INTRO_KEY = 'mouse-race-kids-hard-intro';
+function wantHardIntro(id){
+  if(id !== 'hard' || !LEVELS.hard.blocks || NO_WHEEL) return false;
+  try{ return !sessionStorage.getItem(HARD_INTRO_KEY); }catch(e){ return false; }
+}
+function openHardIntro(){
+  const t = chosen('track');
+  const f = $('hardFrames');
+  for(const k of ['side', 'road', 'dash', 'edge']) f.style.setProperty('--' + k, t[k]);
+  const chip = item=>`<div class="frame-chip"><span class="chip clip" title="Буфер обміну">📋 <span class="clip-item">${item ? icon(item) : '<small>порожньо</small>'}</span></span></div>`;
+  const hint = html=>`<div class="hint wall-hint"><div class="hint-text">${html}</div></div>`;
+  const keys = k=>`<kbd>Ctrl</kbd> + <kbd>${k}</kbd>`;
+  const rocks = Array.from({ length:6 }, ()=>icon('rock')).join('');
+  const frame = (clip, inner, cap)=>`<figure class="frame">${chip(clip)}<div class="mini-side"><div class="mini">
+    <div class="sep" style="left:33.3%"></div><div class="sep" style="left:66.6%"></div>${inner}
+    <div class="mini-car">${carSVG()}</div></div></div><figcaption>${cap}</figcaption></figure>`;
+  f.innerHTML = [
+    frame('', `<div class="wall log" style="transform:translateY(16px)"></div>${hint('✂️ Виріж завал:<br>' + keys('X'))}`,
+      `1. Завал на всю дорогу. Пригальмуй колесом до себе й натисни ${keys('X')}.`),
+    frame('log', `<div class="mini-label">✂️ Вирізано!</div>`,
+      '2. Завал зник і ліг у буфер обміну 📋 над дорогою.'),
+    frame('log', `<div class="wall river" style="transform:translateY(22px)"></div>${hint('🌉 Встав міст:<br>' + keys('V'))}`,
+      `3. Річка з'являється, лише коли в буфері щось є. Натисни ${keys('V')}.`),
+    frame('log', `<div class="wall river bridged by-log" style="transform:translateY(98px)"></div><div class="wall river bridged by-rocks" style="transform:translateY(28px)"></div>`,
+      '4. Зі стовбура вийде міст, з каміння — брід. Не встиг — заїзд закінчиться.'),
+  ].join('');
+  $('hardOverlay').classList.add('show');
+}
+$('hardGo').addEventListener('click', ()=>{
+  try{ sessionStorage.setItem(HARD_INTRO_KEY, '1'); }catch(e){}
+  $('hardOverlay').classList.remove('show');
+  start('hard');
+});
+$('hardClose').addEventListener('click', ()=>$('hardOverlay').classList.remove('show'));
 
 const pointsWord = n=>`${n} ${plural(n, ['бал', 'бали', 'балів'])}`;
 // Як назвати нагороду: «колір синій», «Таксі», «траса 🌵 Пустеля»
@@ -978,10 +1076,12 @@ function start(levelId){
   G = { id:levelId, L, lane:Math.floor((L.lanes - 1) / 2), lives:L.lives, score:0, items:[], prevBad:[], t:0, dist:0, spawn:.6,
         safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0,
         wall:null, wallDue:false, wallAt:planBlocks(L), blocksSeen:0, cuts:0,
+        clip:null, riverAt:0, riverPlanned:false, riversSeen:0, bridges:0, mixups:0,
         gears:L.gears || GEARS, gear:GEAR_NORMAL, turbo:0, brakes:0, wallRun:0, hints:0, got:{ star:0, gem:0, fuel:0, heart:0 }, phase:'count', paused:false, raf:0, last:0, timers:[] };
   field.style.setProperty('--field-w', (L.lanes * 125 + 42) + 'px');
   road.querySelectorAll('.sep, .item, .pop, .wall').forEach(n=>n.remove());
   $('wallHint').hidden = true;
+  renderClip();
   for(let i = 1; i < L.lanes; i++){
     const s = document.createElement('div');
     s.className = 'sep'; s.style.left = `${i * 100 / L.lanes}%`;
@@ -1058,10 +1158,13 @@ function step(dt){
   G.dist += adv / fall;
   road.style.setProperty('--off', `${(G.dist * (H + SZ)) % 60}px`);
 
-  if(!G.wall && !G.wallDue && G.wallAt.length && G.t >= G.wallAt[0]){ G.wallAt.shift(); G.wallDue = true; }
+  if(!G.wall && !G.wallDue){
+    if(G.wallAt.length && G.t >= G.wallAt[0]){ G.wallAt.shift(); G.wallDue = 'wall'; }
+    else if(G.riverAt && G.t >= G.riverAt){ G.riverAt = 0; G.wallDue = 'river'; }
+  }
   if(!G.wall) G.spawn -= adv;
   if(G.spawn <= 0 && !G.wall){
-    if(G.wallDue) spawnWall();   // завал замість чергового ряду, тож перед ним так само порожньо
+    if(G.wallDue) spawnWall(G.wallDue);   // перешкода замість чергового ряду, тож перед нею так само порожньо
     else { spawnRow(); G.spawn += rowSpacing(fall); }
   }
   if(G.wall && moveWall(adv / fall)) return;
@@ -1144,21 +1247,28 @@ function addItem(lane, type, bad){
 function placeItem(it){ it.el.style.transform = `translateY(${it.p * (H + SZ) - SZ}px)`; }
 function removeItem(it){ it.removed = true; it.el.remove(); }
 
-// Завал: повалений стовбур або каміння на всю ширину дороги
-function spawnWall(){
+// Суцільна перешкода на всю ширину дороги (G.wall): завал — повалений стовбур або каміння (прибрати Ctrl + X),
+// або річка (вставити міст Ctrl + V). Вирізаний завал лягає в буфер обміну (G.clip): стовбур стає дерев'яним мостом,
+// каміння — кам'яним бродом. Річка буває раз за заїзд і лише після того, як у буфері щось є
+const BLOCKS = {
+  log:   { act:'cut',   ico:'🛑', what:'Завал',  how:'✂️ Виріж завал', keys:'X' },
+  rocks: { act:'cut',   ico:'🛑', what:'Завал',  how:'✂️ Виріж завал', keys:'X' },
+  river: { act:'paste', ico:'🌊', what:'Річка',  how:'🌉 Встав міст',  keys:'V' },
+};
+function spawnWall(due){
   G.wallDue = false;
-  G.blocksSeen++;
-  const kind = pick(['log', 'rocks']);
+  const kind = due === 'river' ? 'river' : pick(['log', 'rocks']);
+  if(kind === 'river') G.riversSeen++; else G.blocksSeen++;
   const el = document.createElement('div');
   el.className = 'wall ' + kind;
   if(kind === 'rocks') el.innerHTML = Array.from({ length:G.L.lanes * 2 }, ()=>icon('rock')).join('');
   road.insertBefore(el, carEl);
-  G.wall = { p:0, age:0, el, cutHint:false };
+  G.wall = { kind, p:0, age:0, el, cutHint:false };
   placeItem(G.wall);
   SFX.alarm();
   wallHint(G.gear === 0);
 }
-// Завал їде дорогою. true — доїхав до автівки, заїзд скінчено
+// Перешкода їде дорогою. true — доїхала до автівки, заїзд скінчено
 function moveWall(dp){
   const w = G.wall;
   w.p += dp;
@@ -1170,22 +1280,29 @@ function moveWall(dp){
   SFX.hit();
   carEl.classList.remove('hit'); void carEl.offsetWidth; carEl.classList.add('hit');
   road.classList.remove('hurt'); void road.offsetWidth; road.classList.add('hurt');
-  finish(false, 'wall');
+  finish(false, w.kind === 'river' ? 'river' : 'wall');
   return true;
 }
-// Підказка над дорогою: спершу — пригальмувати, потім — як прибрати
+// Підказка над дорогою: спершу — пригальмувати, потім — яке скорочення натиснути
 function wallHint(cut){
-  const h = $('wallHint');
+  const h = $('wallHint'), b = BLOCKS[G.wall.kind];
   if(cut) G.wall.cutHint = true;
   $('wallHintText').innerHTML = cut
-    ? '✂️ Виріж завал:<br><kbd>Ctrl</kbd> + <kbd>X</kbd>'
-    : '🛑 Завал попереду!<br><span class="w">Гальмуй: колесо до себе ↓</span>';
+    ? `${b.how}:<br><kbd>Ctrl</kbd> + <kbd>${b.keys}</kbd>`
+    : `${b.ico} ${b.what} попереду!<br><span class="w">Гальмуй: колесо до себе ↓</span>`;
   h.hidden = true; void h.offsetWidth; h.hidden = false;   // анімація появи щоразу
 }
-// Ctrl + X — завал вирізано
+// Ctrl + X перед річкою чи Ctrl + V перед завалом: підказуємо правильне скорочення, учитель бачить це в результатах
+function mixup(){
+  G.mixups++;
+  SFX.wall();
+  wallHint(true);
+}
+// Ctrl + X — завал вирізано, і він тепер у буфері
 function cutWall(){
   if(!G || G.paused || G.phase !== 'play' || !G.wall) return;
   const w = G.wall;
+  if(BLOCKS[w.kind].act !== 'cut') return mixup();
   G.wall = null;
   G.cuts++;
   G.spawn = .6;   // нові предмети — трохи згодом
@@ -1193,13 +1310,51 @@ function cutWall(){
   w.el.classList.add('cut');
   setTimeout(()=>w.el.remove(), 400);
   SFX.cut();
+  blockPop('✂️ Вирізано!', w);
+  G.clip = w.kind;
+  renderClip(true);
+  planRiver();
+}
+// Ctrl + V — над річкою з'являється міст з того, що в буфері. Буфер не спорожнюється, як і в справжніх програмах
+function pasteBridge(){
+  if(!G || G.paused || G.phase !== 'play' || !G.wall) return;
+  const w = G.wall;
+  if(BLOCKS[w.kind].act !== 'paste') return mixup();
+  if(!G.clip) return;
+  G.wall = null;
+  G.bridges++;
+  G.spawn = .6;
+  $('wallHint').hidden = true;
+  w.el.classList.add('bridged', 'by-' + G.clip);
+  // Річка з мостом далі їде дорогою як звичайний предмет, але ні на що не впливає
+  G.items.push(Object.assign(w, { lane:-1, bad:true, passed:true }));
+  SFX.paste();
+  blockPop(G.clip === 'log' ? '🌉 Міст!' : '🌉 Брід!', w);
+}
+function blockPop(text, w){
   const p = document.createElement('div');
   p.className = 'pop';
-  p.textContent = '✂️ Вирізано!';
+  p.textContent = text;
   p.style.left = '50%';
   p.style.top = Math.max(0, w.p * (H + SZ) - SZ - 10) + 'px';
   road.appendChild(p);
   setTimeout(()=>p.remove(), 950);
+}
+// Річка — через 8–14 с після першого вирізаного завалу, не ближче ніж за 8 с до наступного завалу й не під фініш
+function planRiver(){
+  if(G.riverPlanned) return;
+  G.riverPlanned = true;
+  let t = G.t + 8 + Math.random() * 6;
+  const near = G.wallAt.find(w=>Math.abs(w - t) < 8);
+  if(near) t = near + 10;
+  if(t < G.L.time - 8) G.riverAt = t;
+}
+// Буфер обміну над дорогою: що зараз вирізано
+function renderClip(bump){
+  const c = $('clipChip');
+  c.hidden = !(G && G.L.blocks && !NO_WHEEL);
+  $('clipItem').innerHTML = G && G.clip ? icon(G.clip === 'log' ? 'log' : 'rock') : '<small>порожньо</small>';
+  if(bump){ c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
 }
 
 // Автівка наїхала на предмет
@@ -1327,7 +1482,7 @@ function stopGame(){
   G.phase = 'stopped';
 }
 
-// Кінець заїзду: finished — доїхали до кінця часу, інакше скінчились життя або (why = 'wall') наїхали на завал.
+// Кінець заїзду: finished — доїхали до кінця часу, інакше скінчились життя або наїхали на завал (why = 'wall') чи річку ('river').
 // Зірки: 1 — доїхав до фінішу; +1 — зібрав щонайменше 70% корисних предметів; +1 — не більше одного зіткнення
 function finish(finished, why){
   G.phase = 'end';
@@ -1348,19 +1503,23 @@ function finish(finished, why){
   earned.forEach(st=>store.stickers[st.id] = 1);
   save();
 
-  const wall = why === 'wall';
-  $('resEmoji').textContent = finished ? '🏁' : wall ? '🚧' : '💔';
-  $('resTitle').textContent = finished ? (stars === 3 ? 'Чудово! Фініш!' : 'Фініш!') : wall ? 'Не встиг прибрати завал' : 'Життя скінчились';
+  const wall = why === 'wall', river = why === 'river';
+  $('resEmoji').textContent = finished ? '🏁' : wall ? '🚧' : river ? '🌊' : '💔';
+  $('resTitle').textContent = finished ? (stars === 3 ? 'Чудово! Фініш!' : 'Фініш!')
+    : wall ? 'Не встиг прибрати завал' : river ? 'Не встиг вставити міст' : 'Життя скінчились';
   $('resStars').innerHTML = starsText(stars);
   $('resScore').innerHTML = `${icon('star')} ${g.score} ${plural(g.score, ['бал', 'бали', 'балів'])}`;
   $('resRecord').textContent = record && prev ? '🏆 Новий рекорд!'
-    : wall ? 'Побачив завал — пригальмуй колесом і натисни Ctrl + X' : !finished ? 'Спробуй ще раз — у тебе вийде!' : '';
+    : wall ? 'Побачив завал — пригальмуй колесом і натисни Ctrl + X'
+    : river ? 'Побачив річку — пригальмуй колесом і натисни Ctrl + V' : !finished ? 'Спробуй ще раз — у тебе вийде!' : '';
   $('resList').innerHTML = [
     ['Рівень', `${g.L.ico} ${g.L.name}`],
     ['Час', fmtTime(Math.min(g.t, g.L.time)) + (finished ? '' : ' з ' + fmtTime(g.L.time))],
     ['Зібрано корисного', `${g.goodGot} з ${g.goodSeen}`],
     ['Зіткнень', g.hits],
     g.blocksSeen && ['Завалів вирізано', `${g.cuts} з ${g.blocksSeen}`],
+    g.riversSeen && ['Мостів вставлено', `${g.bridges} з ${g.riversSeen}`],
+    g.mixups && ['Плутав Ctrl + X і Ctrl + V', `${g.mixups} ${plural(g.mixups, ['раз', 'рази', 'разів'])}`],
     ['Клацань', `<span><span class="l">лівою ${g.clicks[0]}</span> · <span class="r">правою ${g.clicks[1]}</span></span>`],
     g.hints && ['Підказка з мишкою', `${g.hints} ${plural(g.hints, ['раз', 'рази', 'разів'])}`],
     ['У скарбничці', `★ ${store.total}`],
@@ -1415,6 +1574,7 @@ document.addEventListener('keydown', e=>{
   if(e.ctrlKey && e.altKey && e.code === 'KeyB'){ e.preventDefault(); toggleBoost(); return; }
   // Ctrl + X (на Mac — Cmd + X) вирізає завал. За e.code, щоб працювало й в українській розкладці
   if((e.ctrlKey || e.metaKey) && !e.altKey && e.code === 'KeyX' && !$('game').hidden && G){ e.preventDefault(); cutWall(); return; }
+  if((e.ctrlKey || e.metaKey) && !e.altKey && e.code === 'KeyV' && !$('game').hidden && G){ e.preventDefault(); pasteBridge(); return; }
   if(e.code === 'Space' && !$('game').hidden && G){
     e.preventDefault();
     if(G.paused) resume(); else pause();

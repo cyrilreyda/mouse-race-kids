@@ -1566,7 +1566,7 @@ function finish(finished, why){
   const earned = STICKERS.filter(st=>!store.stickers[st.id] && st.test(run, store));
   earned.forEach(st=>store.stickers[st.id] = 1);
   save();
-  if(finished) window.Account?.played();   // заїзд завершено — у «Мої ігри» (account.js сам не рахує вдруге)
+  window.Account?.played();   // заїзд завершено (до фінішу чи ні, учень у гру грав) — у «Мої ігри»; account.js сам не рахує вдруге
 
   const wall = why === 'wall', river = why === 'river';
   $('resEmoji').textContent = finished ? '🏁' : wall ? '🚧' : river ? '🌊' : '💔';

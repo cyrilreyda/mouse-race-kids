@@ -109,4 +109,4 @@ python -m http.server 8767
 
 ## Автори
 
-Ідея вправи — [«Швидка мишача допомога 103»](https://itnauka.org/services/digital_literacy/mouse_skills/mouse103/) з ITнауки. Оформлення — з гри [«Клавіатурні перегони»](https://cikavo.me/labs/typing-race/) з Лабораторії [tkc-teacher](https://github.com/tkc-teacher/cikavo). Гра — cyrilreyda.
+Ідея вправи — [«Швидка мишача допомога 103»](https://itnauka.org/services/digital_literacy/mouse_skills/mouse103/) з ITнауки. Оформлення — з гри [«Клавіатурні перегони»](https://cikavo.me/labs/typing-race/). Джерело: Ткачук І. А. Інтерактивні уроки інформатики. — https://cikavo.me. — Ліцензія [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.uk). Гра — cyrilreyda.

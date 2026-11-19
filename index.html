@@ -622,6 +622,14 @@ const STICKERS = [
   { id:'hard',   ico:'🔴', name:'Ас',               how:'Фініш на рівні «Важко»',                              test:r=>r.finished && r.level === 'hard' },
   { id:'races',  ico:'🏆', name:'Справжній гонщик', how:'Проїхати 25 заїздів',                                 test:(r, p)=>p.races >= 25 },
   { id:'bank',   ico:'💰', name:'Повна скарбничка', how:'Зібрати в скарбничку 1000 балів',                     test:(r, p)=>p.total >= 1000 },
+  { id:'overtake', ico:'🚙', name:'Обгін',          how:'Обігнати 5 попутних машин за заїзд',                  test:r=>r.overtaken >= 5 },
+  { id:'bridge', ico:'🌉', name:'Мостобудівник',    how:'Вставити міст через річку клавішами Ctrl + V',        test:r=>r.bridges >= 1 },
+  { id:'hearts', ico:'❤️', name:'Живучий',          how:'Зібрати 2 серця за заїзд',                            test:r=>r.got.heart >= 2 },
+  { id:'starfall', ico:'🌠', name:'Зорепад',        how:'Зібрати 40 зірок за заїзд',                           test:r=>r.got.star >= 40 },
+  { id:'score100', ico:'💯', name:'Сотня',          how:'Набрати 100 балів за заїзд',                          test:r=>r.score >= 100 },
+  { id:'nohint', ico:'🖱️', name:'Влучні кнопки',    how:'Фініш на «Важко», і мишка-підказка жодного разу не з\'явилася', test:r=>r.finished && r.level === 'hard' && r.hints === 0 },
+  { id:'champ',  ico:'👑', name:'Чемпіон',          how:'Отримати 3 зірки на «Важко»',                         test:r=>r.stars === 3 && r.level === 'hard' },
+  { id:'garage', ico:'🔑', name:'Гараж мрії',       how:'Відкрити в гаражі все: кольори, автівки й траси',     test:(r, p)=>GARAGE_ALL.every(x=>p.total >= x.at) },
 ];
 const STORE_KEY = BOOST ? 'mouse-race-kids-boost-v1' : 'mouse-race-kids-v1';
 
@@ -785,6 +793,9 @@ const COLORS = [
   { id:'purple', name:'фіолетовий', fill:'#6C5CE7', dark:'#4B3DBF', at:150 },
   { id:'green',  name:'зелений',    fill:'#3DBE6B', dark:'#23914A', at:220 },
   { id:'black',  name:'чорний',     fill:'#3A3A58', dark:'#1B1B3A', at:300 },
+  { id:'orange', name:'помаранчевий', fill:'#FF9F1C', dark:'#C9740A', at:1100 },
+  { id:'lime',   name:'лаймовий',   fill:'#9BD13A', dark:'#6E9A1E', at:1350 },
+  { id:'cherry', name:'вишневий',   fill:'#B3263E', dark:'#7E1428', at:1650 },
 ];
 // Автівки зверху, у viewBox 40×64, дивляться вгору — назустріч предметам. c — колір із COLORS
 const GLASS = '#BDE6FF';
@@ -827,6 +838,16 @@ const MODELS = [
     <rect x="10.5" y="28" width="19" height="13" rx="3" fill="${c.dark}" opacity=".35"/>
     <path d="M12 46q4-6 8 0 4-6 8 0-8 6-16 0z" fill="#FFC93C"/>
     <circle cx="12" cy="8.5" r="2.2" fill="#FFF3B0"/><circle cx="28" cy="8.5" r="2.2" fill="#FFF3B0"/>` },
+  // Остання автівка — швидка допомога, як у вправі «Швидка мишача допомога 103»: синьо-червоні мигалки й 103 на капоті
+  { id:'ambulance', name:'Швидка', at:2000, draw:c=>`${wheels(6, 13, [8, 43])}
+    <rect x="4" y="2" width="32" height="59" rx="5" fill="${c.fill}" stroke="${c.dark}" stroke-width="2"/>
+    <text x="20" y="7.4" font-size="4.8" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-weight="700">103</text>
+    <rect x="8" y="9.5" width="24" height="8" rx="2" fill="${GLASS}" stroke="#1B1B3A" stroke-width="1.5"/>
+    <rect x="10" y="19.5" width="10" height="3.4" rx="1" fill="#2D7DF6"><animate attributeName="opacity" values="1;.25;1" dur=".8s" repeatCount="indefinite"/></rect>
+    <rect x="20" y="19.5" width="10" height="3.4" rx="1" fill="#E0453A"><animate attributeName="opacity" values=".25;1;.25" dur=".8s" repeatCount="indefinite"/></rect>
+    <rect x="8" y="25" width="24" height="32" rx="3" fill="#fff" stroke="${c.dark}" stroke-width="1.2"/>
+    <path d="M20 33v16M12 41h16" stroke="#E0453A" stroke-width="5"/>
+    <circle cx="9" cy="4.8" r="1.8" fill="#FFF3B0"/><circle cx="31" cy="4.8" r="1.8" fill="#FFF3B0"/>` },
 ];
 // Траси: side — узбіччя, road — асфальт, dash — розмітка між смугами, edge — лінії по краях дороги
 const TRACKS = [
@@ -842,8 +863,15 @@ const TRACKS = [
     side:'#2B2D5A radial-gradient(circle, #FFD86B 2.5px, transparent 3px) 0 0/16px 24px' },
   { id:'space',  name:'Космос',  ico:'🚀', at:800, road:'#3A2A6E', dash:'#7FE7FF', edge:'#B79CE0',
     side:'radial-gradient(circle, #fff 1.6px, transparent 2px) 0 0/19px 19px, radial-gradient(circle, #B79CE0 2px, transparent 2.5px) 9px 11px/23px 23px #1B1240' },
+  { id:'beach',  name:'Пляж',    ico:'🏖️', at:1200, road:'#5C6A7E', dash:'rgba(255,255,255,.85)', edge:'#7FD3E8',
+    side:'radial-gradient(circle, #fff 2.5px, transparent 3px) 0 0/22px 22px, radial-gradient(circle, #F7A8A0 2.5px, transparent 3px) 11px 11px/22px 22px #F4DDA8' },
+  { id:'candy',  name:'Цукерки', ico:'🍭', at:1500, road:'#7A4E3A', dash:'#FFF3B0', edge:'#FF8FC0',
+    side:'radial-gradient(circle, #FF5D9E 3px, transparent 3.5px) 0 0/18px 18px, radial-gradient(circle, #5BC8F5 3px, transparent 3.5px) 9px 9px/18px 18px #FFE0F0' },
+  { id:'volcano', name:'Вулкан', ico:'🌋', at:1800, road:'#2A2230', dash:'#FF8A3D', edge:'#FF5A1F',
+    side:'radial-gradient(circle, #FF6B1A 4px, transparent 4.5px) 0 0/24px 24px, radial-gradient(circle, #FFC93C 2px, transparent 2.5px) 12px 12px/24px 24px #3A2626' },
 ];
 const GARAGE = { color:COLORS, model:MODELS, track:TRACKS };
+const GARAGE_ALL = [...COLORS, ...MODELS, ...TRACKS];
 const KIND_NAME = { color:'Колір', model:'Автівка', track:'Траса' };
 const isOpen = (x, total = store.total)=>total >= x.at;
 const chosen = kind=>{ const list = GARAGE[kind], x = list.find(x=>x.id === store[kind]); return x && isOpen(x) ? x : list[0]; };
@@ -1147,7 +1175,7 @@ function start(levelId){
   G = { id:levelId, L, lane:Math.floor((L.lanes - 1) / 2), lives:L.lives, score:0, items:[], prevBad:[], t:0, dist:0, spawn:.6,
         safe:0, goodSeen:0, goodGot:0, hits:0, clicks:[0, 0], walls:0,
         wall:null, wallDue:false, wallAt:planBlocks(L), blocksSeen:0, cuts:0,
-        traffic:null, trafficAt:nextTraffic(L, 0), clip:null, riverAt:0, riverPlanned:false, riversSeen:0, bridges:0, mixups:0,
+        traffic:null, trafficAt:nextTraffic(L, 0), overtaken:0, clip:null, riverAt:0, riverPlanned:false, riversSeen:0, bridges:0, mixups:0,
         gears:L.gears || GEARS, gear:GEAR_NORMAL, turbo:0, brakes:0, wallRun:0, hints:0, got:{ star:0, gem:0, fuel:0, heart:0 }, phase:'count', paused:false, raf:0, last:0, timers:[] };
   field.style.setProperty('--field-w', (L.lanes * 125 + 42) + 'px');
   road.querySelectorAll('.sep, .item, .pop, .wall').forEach(n=>n.remove());
@@ -1247,7 +1275,11 @@ function step(dt){
     placeItem(it);
     const sz = itemH(it), y = it.p * (H + sz) - sz;
     if(it.lane === G.lane && y + sz - pad > carTop && y + pad < carBottom){ touch(it); if(!G || G.phase !== 'play') return; continue; }
-    if(y + pad > carBottom && !it.passed){ it.passed = true; if(!it.bad) G.goodSeen++; }   // корисний предмет проїхали
+    if(y + pad > carBottom && !it.passed){   // корисний предмет проїхали; попутну машину обігнали, якщо не зачепили
+      it.passed = true;
+      if(!it.bad) G.goodSeen++;
+      else if(it.speed && !it.touched) G.overtaken++;
+    }
     if(it.p >= 1) removeItem(it);
   }
   G.items = G.items.filter(it=>!it.removed);
@@ -1472,7 +1504,7 @@ function renderClip(bump){
 function touch(it){
   it.done = true;
   if(it.bad){
-    if(G.safe > 0){ it.done = false; return; }   // ще блимає після попереднього зіткнення — проїжджає крізь
+    if(G.safe > 0){ it.done = false; it.touched = true; return; }   // ще блимає після попереднього зіткнення — проїжджає крізь
     G.lives--; G.hits++;
     G.safe = SAFE_TIME;
     renderHearts();
@@ -1609,7 +1641,8 @@ function finish(finished, why){
   store.total += g.score;
   store.races++;
   const opened = Object.entries(GARAGE).flatMap(([kind, list])=>list.filter(x=>x.at > before && isOpen(x)).map(x=>({ kind, x })));
-  const run = { finished, stars, level:g.id, hits:g.hits, goodSeen:g.goodSeen, goodGot:g.goodGot, got:g.got, turbo:g.turbo, brakes:g.brakes };
+  const run = { finished, stars, level:g.id, hits:g.hits, goodSeen:g.goodSeen, goodGot:g.goodGot, got:g.got, turbo:g.turbo, brakes:g.brakes,
+                score:g.score, hints:g.hints, bridges:g.bridges, overtaken:g.overtaken };
   const earned = STICKERS.filter(st=>!store.stickers[st.id] && st.test(run, store));
   earned.forEach(st=>store.stickers[st.id] = 1);
   save();

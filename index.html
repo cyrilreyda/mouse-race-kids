@@ -848,6 +848,17 @@ const MODELS = [
     <rect x="8" y="25" width="24" height="32" rx="3" fill="#fff" stroke="${c.dark}" stroke-width="1.2"/>
     <path d="M20 33v16M12 41h16" stroke="#E0453A" stroke-width="5"/>
     <circle cx="9" cy="4.8" r="1.8" fill="#FFF3B0"/><circle cx="31" cy="4.8" r="1.8" fill="#FFF3B0"/>` },
+  // Найостанніша — «Чорна блискавка»: гострий ніс, плавники ззаду, блискавка на капоті й полум'я із сопла
+  { id:'lightning', name:'Чорна блискавка', at:2500, draw:c=>`${wheels(6, 13, [10, 41])}
+    <path d="M4 42L.5 61 8 57zM36 42l3.5 19-7.5-4z" fill="${c.dark}" stroke="#1B1B3A" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M20 1l10 7 5 14 1 28-3 10H7L4 50l1-28 5-14z" fill="${c.fill}" stroke="${c.dark}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M22.5 5L16 13.5h4L17 19.5l7.5-8.5h-4z" fill="#FFC93C" stroke="#C99A1E" stroke-width=".8" stroke-linejoin="round"/>
+    <path d="M15 22q5-4 10 0l-1 12h-8z" fill="${GLASS}" stroke="#1B1B3A" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M11 38h18M12 43h16" stroke="${c.dark}" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M8.5 11.5l4-2.5M31.5 11.5l-4-2.5" stroke="#FFF3B0" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M16.5 61Q20 70 23.5 61z" fill="#FF8A3D"><animate attributeName="d" values="M16.5 61Q20 69 23.5 61z;M16.5 61Q20 74 23.5 61z;M16.5 61Q20 69 23.5 61z" dur=".35s" repeatCount="indefinite"/></path>
+    <path d="M18 61Q20 66 22 61z" fill="#FFE07A"/>
+    <rect x="15.5" y="57.5" width="9" height="4" rx="1.2" fill="#1B1B3A"/>` },
 ];
 // Траси: side — узбіччя, road — асфальт, dash — розмітка між смугами, edge — лінії по краях дороги
 const TRACKS = [

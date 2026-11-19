@@ -1,13 +1,13 @@
 {
-  "README.md": "6d09a4440fcf159f",
+  "README.md": "3865a6f363b92edb",
   "fonts/OFL-baloo2.txt": "72adb492d4f0ede2",
   "fonts/OFL-nunitosans.txt": "2ae17359801c71b7",
   "fonts/fonts.css": "d583f2886ee4cbbd",
-  "guide/index.html": "c7513c51e93ca85a",
+  "guide/index.html": "7e437a084e45ad9b",
   "icons/icon-192.png": "8cf70fd114400bc2",
   "icons/icon-512.png": "d1fbafa5a9b0e079",
   "icons/icon.svg": "723d4e4805dba7a2",
-  "index.html": "6056fa6faa57b385",
+  "index.html": "d2b9e67a584c4ae6",
   "manifest.webmanifest": "418d6b88ae41b01c",
   "sw.js": "0afed5d41b9e59cb"
 }

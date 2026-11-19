@@ -127,6 +127,14 @@
   .item.gone{transition:opacity .25s ease, scale .25s ease; opacity:0; scale:1.6;}
   .car{position:absolute; bottom:var(--car-b); width:var(--car-w); margin-left:calc(var(--car-w) / -2); z-index:2; transition:left .13s ease-out;}
   .car svg{display:block; width:100%; height:auto; overflow:visible; filter:drop-shadow(0 4px 3px rgba(0,0,0,.3));}
+  /* Вихлоп: напівпрозорі хмаринки з-під заднього бампера, поки автівка їде; що вища швидкість, то частіше (--puff задає renderGear) */
+  .car .exhaust{position:absolute; left:0; right:0; top:96%; height:calc(var(--car-w) * .8); z-index:-1; opacity:0; transition:opacity .5s ease; pointer-events:none;}
+  .car.moving .exhaust{opacity:1;}
+  .car .exhaust i{position:absolute; left:34%; top:0; width:calc(var(--car-w) * .34); aspect-ratio:1; margin-left:calc(var(--car-w) * -.17); border-radius:50%; background:rgba(255,255,255,.7);
+    animation:puff var(--puff, 1.1s) ease-out infinite paused;}
+  .car.moving .exhaust i{animation-play-state:running;}
+  .car .exhaust i:nth-child(2){animation-delay:calc(var(--puff, 1.1s) / -3);} .car .exhaust i:nth-child(3){animation-delay:calc(var(--puff, 1.1s) / -1.5);}
+  @keyframes puff{0%{transform:translate(0,0) scale(.5); opacity:.8;} 100%{transform:translate(calc(var(--car-w) * -.15), calc(var(--car-w) * .8)) scale(1.8); opacity:0;}}
   .car.hit svg{animation:hit .45s ease;}
   @keyframes hit{20%{transform:rotate(-12deg) translateX(-4px);} 45%{transform:rotate(10deg) translateX(4px);} 70%{transform:rotate(-5deg);}}
   .car.safe{animation:blink .22s steps(2) infinite;}
@@ -890,7 +898,7 @@ const carSVG = (model = chosen('model'), color = chosen('color'))=>`<svg viewBox
 // Мініатюра траси: узбіччя з дорогою посередині
 const trackPrev = t=>`<span class="track-prev" style="--side:${t.side}; --road:${t.road}; --dash:${t.dash}; --edge:${t.edge}"></span>`;
 function applyGarage(){
-  $('car').innerHTML = carSVG();
+  $('car').innerHTML = carSVG() + '<span class="exhaust" aria-hidden="true"><i></i><i></i><i></i></span>';
   $('progCar').innerHTML = carSVG();
   const t = chosen('track');
   for(const k of ['side', 'road', 'dash', 'edge']) $('field').style.setProperty('--' + k, t[k]);
@@ -1237,6 +1245,7 @@ function countdown(){
   G.timers.push(setTimeout(()=>{
     $('countOver').hidden = true;
     G.phase = 'play';
+    carEl.classList.add('moving');
     G.last = performance.now();
     if(document.hidden || !document.hasFocus()) pause();
     else G.raf = requestAnimationFrame(loop);
@@ -1607,6 +1616,7 @@ function renderGear(bump){
   $('gearBars').querySelectorAll('i').forEach((b, i)=>{ b.classList.toggle('on', i <= n); b.classList.toggle('fast', i <= n && n > GEAR_NORMAL); });
   const c = $('gearChip');
   if(bump){ c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+  $('car').style.setProperty('--puff', (1.1 / (G ? G.gears : GEARS)[n]).toFixed(2) + 's');
 }
 function flashMouse(dir){
   const b = $('sideMouse').querySelector(dir < 0 ? '.bl' : '.br');
@@ -1618,12 +1628,14 @@ function flashMouse(dir){
 function pause(){
   if(!G || G.phase !== 'play' || G.paused) return;
   G.paused = true;
+  carEl.classList.remove('moving');
   cancelAnimationFrame(G.raf);
   $('pauseOver').hidden = false;
 }
 function resume(){
   if(!G || !G.paused) return;
   G.paused = false;
+  carEl.classList.add('moving');
   $('pauseOver').hidden = true;
   G.last = performance.now();
   G.raf = requestAnimationFrame(loop);
@@ -1634,12 +1646,14 @@ function stopGame(){
   cancelAnimationFrame(G.raf);
   G.timers.forEach(clearTimeout);
   G.phase = 'stopped';
+  carEl.classList.remove('moving');
 }
 
 // Кінець заїзду: finished — доїхали до кінця часу, інакше скінчились життя або наїхали на завал (why = 'wall') чи річку ('river').
 // Зірки: 1 — доїхав до фінішу; +1 — зібрав щонайменше 70% корисних предметів; +1 — не більше одного зіткнення
 function finish(finished, why){
   G.phase = 'end';
+  carEl.classList.remove('moving');
   cancelAnimationFrame(G.raf);
   const g = G;
   const share = g.goodSeen ? g.goodGot / g.goodSeen : 0;
